@@ -2,7 +2,6 @@ package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.AlbumReviewRequest;
-import com.musicspring.app.music_app.model.dto.request.SongReviewRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

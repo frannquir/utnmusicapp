@@ -1,7 +1,6 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
-import com.musicspring.app.music_app.model.dto.request.SongRequest;
 import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.service.SongService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Songs", description = "Endpoints related to song management")
 public class SongController {
 
-    private SongService songService;
+    private final SongService songService;
 
     @Autowired
     public SongController(SongService songService) {

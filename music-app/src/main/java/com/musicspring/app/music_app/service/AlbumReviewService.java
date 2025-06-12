@@ -2,7 +2,6 @@ package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.request.*;
 import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
-import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
@@ -11,18 +10,13 @@ import com.musicspring.app.music_app.repository.AlbumRepository;
 import com.musicspring.app.music_app.repository.AlbumReviewRepository;
 import com.musicspring.app.music_app.repository.ArtistRepository;
 import com.musicspring.app.music_app.repository.UserRepository;
-import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.service.AuthService;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
 import java.util.Optional;
 
 @Service

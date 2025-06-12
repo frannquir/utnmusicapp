@@ -1,8 +1,6 @@
 package com.musicspring.app.music_app.controller;
 
-import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
-import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.service.AlbumService;
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/albums")
 @Tag(name = "Albums", description = "Endpoints for managing albums")
 public class AlbumController {
-    private AlbumService albumService;
+    private final AlbumService albumService;
 
     @Autowired
     public AlbumController(AlbumService albumService) {

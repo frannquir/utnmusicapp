@@ -1,7 +1,6 @@
 package com.musicspring.app.music_app.repository;
 
 import com.musicspring.app.music_app.model.entity.AlbumReviewEntity;
-import com.musicspring.app.music_app.model.entity.SongReviewEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

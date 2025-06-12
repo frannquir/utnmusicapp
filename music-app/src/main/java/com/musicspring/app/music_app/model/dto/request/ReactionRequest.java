@@ -1,6 +1,5 @@
 package com.musicspring.app.music_app.model.dto.request;
 
-import com.musicspring.app.music_app.model.enums.CommentType;
 import com.musicspring.app.music_app.model.enums.ReactedType;
 import com.musicspring.app.music_app.model.enums.ReactionType;
 import io.swagger.v3.oas.annotations.media.Schema;

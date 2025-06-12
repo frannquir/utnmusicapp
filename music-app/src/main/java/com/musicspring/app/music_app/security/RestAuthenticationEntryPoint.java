@@ -8,7 +8,6 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 
 import java.io.IOException;
-import java.security.SignatureException;
 
 public class RestAuthenticationEntryPoint implements org.springframework.security.web.AuthenticationEntryPoint {
     @Override

@@ -11,8 +11,6 @@ import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
-
-import java.sql.Date;
 import java.time.LocalDate;
 
 @Component
@@ -35,7 +33,7 @@ public class SpotifyMapper {
             albumRequest.setArtistName("Unknown artist");
         }
         // Get image URL from Spotify
-        String imageUrl = null;
+        String imageUrl;
         Image[] images = spotifyAlbum.getImages();
         if (images != null && images.length > 0) {
             imageUrl = images[0].getUrl();
@@ -70,7 +68,7 @@ public class SpotifyMapper {
             albumRequest.setArtistName("Unknown artist");
         }
         // Get image URL from Spotify
-        String imageUrl = null;
+        String imageUrl;
         Image[] images = spotifyAlbum.getImages();
         if (images != null && images.length > 0) {
             imageUrl = images[0].getUrl();
@@ -101,7 +99,7 @@ public class SpotifyMapper {
         artistRequest.setName(spotifyArtist.getName());
         artistRequest.setFollowers(spotifyArtist.getFollowers().getTotal());
 
-        String imageUrl = null;
+        String imageUrl;
         Image[] images = spotifyArtist.getImages();
         if (images != null && images.length > 0) {
             imageUrl = images[0].getUrl();
