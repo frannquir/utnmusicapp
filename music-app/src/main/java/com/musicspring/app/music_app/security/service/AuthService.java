@@ -1,7 +1,6 @@
 package com.musicspring.app.music_app.security.service;
 
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
-import com.musicspring.app.music_app.model.dto.response.UserResponse;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.mapper.CredentialMapper;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
@@ -97,21 +96,6 @@ public class AuthService {
     }
 
     @Transactional
-    public UserResponse registerUser(AuthRequest authRequest) {
-        UserEntity user = userMapper.toUserEntity(authRequest);
-
-        CredentialEntity credential = credentialMapper.toCredentialEntity(authRequest, user);
-        credential.setRoles(Set.of(roleRepository
-                .findByRole(Role.ROLE_USER)
-                .orElseThrow(() -> new EntityNotFoundException("Default role ROLE_USER not found"))));
-
-        credential.setRefreshToken(jwtService.generateRefreshToken(credential));
-
-        user.setCredential(credential);
-        return userMapper.toResponse(user);
-    }
-
-    @Transactional
     public AuthResponse registerUserWithEmail(SignupRequest signupRequest) {
 
         if (credentialsRepository.findByEmail(signupRequest.getEmail()).isPresent())
@@ -153,8 +137,7 @@ public class AuthService {
             throw new AccessDeniedException("User not authenticated");
         }
 
-        if (authentication.getPrincipal() instanceof CredentialEntity) {
-            CredentialEntity credential = (CredentialEntity) authentication.getPrincipal();
+        if (authentication.getPrincipal() instanceof CredentialEntity credential) {
             if (credential.getUser() != null) {
                 return credential.getUser().getUserId();
             }

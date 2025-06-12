@@ -3,7 +3,6 @@ package com.musicspring.app.music_app.model.dto.response;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -32,13 +31,4 @@ public class SongResponse {
 
     private LocalDate releaseDate;
 
-    public String getDurationFormatted() {
-        if (durationMs == null) return "0:00";
-
-        int totalSeconds = durationMs / 1000;
-        int minutes = totalSeconds / 60;
-        int seconds = totalSeconds % 60;
-
-        return String.format("%d:%02d", minutes, seconds);
-    }
 }

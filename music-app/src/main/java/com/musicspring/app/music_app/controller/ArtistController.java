@@ -1,6 +1,5 @@
 package com.musicspring.app.music_app.controller;
 
-import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistWithSongsResponse;
 import com.musicspring.app.music_app.service.ArtistService;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

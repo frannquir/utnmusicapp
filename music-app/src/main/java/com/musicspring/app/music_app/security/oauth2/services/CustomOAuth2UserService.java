@@ -131,7 +131,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private CredentialEntity createNewOAuth2User(String email, String googleId, String name, String pictureUrl) {
         // Create main user entity with basic information
         UserEntity user = UserEntity.builder()
-                .username(generateUsernameFromEmail(email))  // Generate unique username
+                .username(name)
                 .active(true)                                // New OAuth2 users are active by default
                 .build();
 
@@ -152,18 +152,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         credential.setRefreshToken(refreshToken);
 
         return credential;
-    }
-
-    /**
-     * Generates a unique username from email address.
-     * This method creates a unique username by combining the email prefix with a timestamp.
-     * This ensures uniqueness even if multiple users have similar email prefixes.
-     * Example: "john.doe@gmail.com" becomes "john.doe_1640995200000"
-     * @param email User's email address
-     * @return Unique username string
-     */
-    private String generateUsernameFromEmail(String email) {
-        return email.split("@")[0] + "_" + System.currentTimeMillis();
     }
 
     /**

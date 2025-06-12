@@ -9,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Component
 public class AlbumReviewMapper {
 
@@ -36,11 +33,6 @@ public class AlbumReviewMapper {
                 .build();
     }
 
-    public List<AlbumReviewResponse> toResponseList(List<AlbumReviewEntity> albumReviews) {
-        return albumReviews.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
 
     public Page<AlbumReviewResponse> toResponsePage(Page<AlbumReviewEntity> albumReviewPage) {
         return albumReviewPage.map(this::toResponse);

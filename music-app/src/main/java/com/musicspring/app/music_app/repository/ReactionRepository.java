@@ -25,19 +25,11 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
                                                           @Param("reacted") ReactedType reactedType,
                                                           Pageable pageable);
 
-    Optional<ReactionEntity> findByUser_UserIdAndReview_ReviewIdAndReactedType(Long userId, Long reviewId, ReactedType reactedType);
-
-    Optional<ReactionEntity> findByUser_UserIdAndComment_CommentIdAndReactedType(Long userId, Long commentId, ReactedType reactedType);
-
     Page<ReactionEntity> findByUser_UserId(Long userId, Pageable pageable);
 
     Page<ReactionEntity> findByComment_CommentId(Long commentId, Pageable pageable);
 
     Page<ReactionEntity> findByReview_ReviewId(Long reviewId, Pageable pageable);
-
-    boolean existsByUserAndReviewAndReactionType(UserEntity user, ReviewEntity review, ReactionType reactionType);
-
-    boolean existsByUserAndCommentAndReactionType(UserEntity user, CommentEntity comment, ReactionType reactionType);
 
     Optional<ReactionEntity> findByUserAndReview(UserEntity user, ReviewEntity review);
     Optional<ReactionEntity> findByUserAndComment(UserEntity user, CommentEntity comment);

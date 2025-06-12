@@ -58,9 +58,7 @@ public class JwtService {
         claims.put("roles", userDetails.getAuthorities());
         
         // Add user ID to JWT if userDetails is CredentialEntity
-        if (userDetails instanceof com.musicspring.app.music_app.security.entity.CredentialEntity) {
-            com.musicspring.app.music_app.security.entity.CredentialEntity credential =
-                (com.musicspring.app.music_app.security.entity.CredentialEntity) userDetails;
+        if (userDetails instanceof com.musicspring.app.music_app.security.entity.CredentialEntity credential) {
             if (credential.getUser() != null) {
                 claims.put("userId", credential.getUser().getUserId());
             }
@@ -72,15 +70,6 @@ public class JwtService {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
-    }
-    public Long extractUserId(String token) {
-        return extractClaim(token, claims -> {
-            Object userIdClaim = claims.get("userId");
-            if (userIdClaim == null) {
-                return null;
-            }
-            return Long.valueOf(userIdClaim.toString());
-        });
     }
 
     private Claims extractAllClaims(String token) {

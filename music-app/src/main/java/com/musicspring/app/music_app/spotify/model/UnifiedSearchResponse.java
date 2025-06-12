@@ -18,9 +18,4 @@ public class UnifiedSearchResponse {
     private Page<AlbumRequest> albums;
     private String query;
 
-    public boolean getHasResults() {
-        return (songs != null && !songs.isEmpty()) || 
-               (artists != null && !artists.isEmpty()) || 
-               (albums != null && !albums.isEmpty());
-    }
 }

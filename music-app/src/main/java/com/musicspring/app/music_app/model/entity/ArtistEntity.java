@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+
 public class ArtistEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

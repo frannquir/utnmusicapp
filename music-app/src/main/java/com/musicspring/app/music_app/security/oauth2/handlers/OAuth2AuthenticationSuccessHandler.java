@@ -9,7 +9,6 @@ import com.musicspring.app.music_app.security.repository.RoleRepository;
 import com.musicspring.app.music_app.security.service.JwtService;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.repository.UserRepository;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,11 +80,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
      * @param response       HttpServletResponse for sending the redirect response
      * @param authentication Authentication object containing OAuth2 user data
      * @throws IOException      if redirect operation fails
-     * @throws ServletException if servlet processing fails
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+                                        Authentication authentication) throws IOException{
 
         // Extract OAuth2 user principal from authentication object
         Object principal = authentication.getPrincipal();
@@ -94,14 +92,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // Handle different OAuth2 provider response formats
         // DefaultOidcUser is used for OpenID Connect providers (like Google)
-        if (principal instanceof DefaultOidcUser) {
-            DefaultOidcUser oidcUser = (DefaultOidcUser) principal;
+        if (principal instanceof DefaultOidcUser oidcUser) {
             email = oidcUser.getEmail();           // Extract email from OIDC claims
             name = oidcUser.getFullName();         // Extract full name from OIDC claims
         }
         // OAuth2User is used for standard OAuth2 providers
-        else if (principal instanceof OAuth2User) {
-            OAuth2User oauth2User = (OAuth2User) principal;
+        else if (principal instanceof OAuth2User oauth2User) {
             email = oauth2User.getAttribute("email");  // Extract email from OAuth2 attributes
             name = oauth2User.getAttribute("name");    // Extract name from OAuth2 attributes
         }

@@ -1,12 +1,11 @@
 package com.musicspring.app.music_app.service;
 
-import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.entity.AlbumEntity;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.repository.AlbumRepository;
-import com.musicspring.app.music_app.repository.ArtistRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,12 +17,11 @@ public class AlbumService  {
 
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
-    private final ArtistRepository artistRepository;
 
-    public AlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper, ArtistRepository artistRepository) {
+    @Autowired
+    public AlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper) {
         this.albumRepository = albumRepository;
         this.albumMapper = albumMapper;
-        this.artistRepository = artistRepository;
     }
 
 
@@ -36,13 +34,8 @@ public class AlbumService  {
                 -> new EntityNotFoundException("Album with ID " + id + " not found.")));
     }
 
-    public AlbumEntity findEntityById(Long id) {
-        return albumRepository.findById(id).orElseThrow(()
-                -> new EntityNotFoundException("Album with ID " + id + " not found."));
-    }
-
     public void deleteById(Long id) {
-        AlbumEntity albumEntity = albumRepository.findById(id).orElseThrow(()->
+        albumRepository.findById(id).orElseThrow(()->
                 new EntityNotFoundException("Album with ID " + id + " not found."));
         albumRepository.deleteById(id);
     }

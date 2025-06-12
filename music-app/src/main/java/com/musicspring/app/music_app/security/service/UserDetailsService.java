@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
-    private CredentialRepository credentialRepository;
+    private final CredentialRepository credentialRepository;
+
     @Autowired
     public UserDetailsService(CredentialRepository credentialRepository) {
         this.credentialRepository = credentialRepository;

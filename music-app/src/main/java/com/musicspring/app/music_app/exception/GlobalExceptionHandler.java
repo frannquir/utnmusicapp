@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error -> 
             errors.put(error.getField(), error.getDefaultMessage()));
         
-        String errorMessage = "Validation failed: " + errors.toString();
+        String errorMessage = "Validation failed: " + errors;
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorDetails.from(errorMessage, request.getDescription(false)));
@@ -40,7 +40,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex, WebRequest request) {
         System.err.println("Unexpected error: " + ex.getMessage());
-        ex.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorDetails.from("Internal server error: " + ex.getMessage(), request.getDescription(false)));
@@ -54,7 +53,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResourceAccessException.class)
-    public ResponseEntity<ErrorDetails> handleResourceAccessException(ResourceAccessException ex, WebRequest request) {
+    public ResponseEntity<ErrorDetails> handleResourceAccessException(WebRequest request) {
         return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(ErrorDetails.from("Could not connect to Spotify service", request.getDescription(false)));

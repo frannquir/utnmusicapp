@@ -24,8 +24,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Spotify", description = "API for Spotify integration operations")
 public class SpotifyController {
 
+    private final SpotifyService spotifyService;
+
     @Autowired
-    private SpotifyService spotifyService;
+    public SpotifyController(SpotifyService spotifyService) {
+        this.spotifyService = spotifyService;
+    }
 
     @Operation(
             summary = "Search songs on Spotify",

@@ -1,9 +1,7 @@
 package com.musicspring.app.music_app.service;
 
-import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistWithSongsResponse;
-import com.musicspring.app.music_app.model.entity.AlbumEntity;
 import com.musicspring.app.music_app.model.entity.ArtistEntity;
 import com.musicspring.app.music_app.model.mapper.ArtistMapper;
 import com.musicspring.app.music_app.repository.ArtistRepository;
@@ -12,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class ArtistService {
@@ -35,18 +30,13 @@ public class ArtistService {
     }
 
     public void deleteById(Long id) {
-        ArtistEntity artist = artistRepository.findById(id)
+        artistRepository.findById(id)
                 .orElseThrow(()-> new EntityNotFoundException("Artist with ID " + id + " not found."));
         artistRepository.deleteById(id);
     }
 
     public Page<ArtistResponse> findAll(Pageable pageable) {
         return artistMapper.toResponsePage(artistRepository.findAll(pageable));
-    }
-
-    private ArtistResponse findById(Long id) {
-        return artistMapper.toResponse(artistRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Artist with id " + id + " not found")));
     }
 
     public ArtistResponse getArtistResponseById(Long id) {

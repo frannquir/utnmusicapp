@@ -2,7 +2,6 @@ package com.musicspring.app.music_app.model.dto.request;
 
 
 import com.musicspring.app.music_app.model.enums.CommentType;
-import com.musicspring.app.music_app.model.enums.ReviewType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
