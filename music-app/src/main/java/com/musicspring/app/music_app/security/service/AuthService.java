@@ -87,7 +87,13 @@ public class AuthService {
         credentialEntity.setRefreshToken(newRefreshToken);
         credentialsRepository.save(credentialEntity);
       
-        return new AuthResponse(newAccessToken, newRefreshToken,credentialEntity.getId(),credentialEntity.getUsername(),credentialEntity.getEmail());
+        return AuthResponse.builder()
+                .token(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .id(credentialEntity.getId())
+                .username(credentialEntity.getUsername())
+                .email(credentialEntity.getEmail())
+                .build();
     }
 
     @Transactional
