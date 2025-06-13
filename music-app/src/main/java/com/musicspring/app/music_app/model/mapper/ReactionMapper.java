@@ -3,10 +3,10 @@ package com.musicspring.app.music_app.model.mapper;
 import com.musicspring.app.music_app.model.dto.request.ReactionRequest;
 import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
 import com.musicspring.app.music_app.model.entity.*;
+import com.musicspring.app.music_app.model.enums.ReactedType;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,26 +36,21 @@ public class ReactionMapper {
                 .collect(Collectors.toList());
     }
 
-    public ReactionEntity toEntity(ReactionRequest reactionRequest,
-                                   UserEntity userEntity,
-                                   CommentEntity commentEntity){
+    public ReactionEntity toEntity(ReactionRequest request, UserEntity user, CommentEntity comment){
         return ReactionEntity.builder()
-                .reactedType(reactionRequest.getReactedType())
-                .reactionType(reactionRequest.getReactionType())
-                .user(userEntity)
-                .comment(commentEntity)
+                .reactionType(request.getReactionType())
+                .reactedType(ReactedType.COMMENT) // fijamos el tipo explícitamente
+                .user(user)
+                .comment(comment)
                 .build();
     }
 
-    public ReactionEntity toEntity(ReactionRequest reactionRequest,
-                                   UserEntity userEntity,
-                                   ReviewEntity reviewEntity){
+    public ReactionEntity toEntity(ReactionRequest request, UserEntity user, ReviewEntity review){
         return ReactionEntity.builder()
-                .reactedType(reactionRequest.getReactedType())
-                .reactionType(reactionRequest.getReactionType())
-                .user(userEntity)
-                .review(reviewEntity)
+                .reactionType(request.getReactionType())
+                .reactedType(ReactedType.REVIEW) // fijamos el tipo explícitamente
+                .user(user)
+                .review(review)
                 .build();
     }
 }
-

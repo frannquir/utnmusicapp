@@ -24,9 +24,5 @@ public class ReactionRequest {
     @NotNull(message = "Reaction type is required")
     private ReactionType reactionType;
 
-    @Schema(description = "Type of the object reacted (Comment or review)", example = "COMMENT")
-    @NotNull(message = "Reacted type is required")
-    private ReactedType reactedType;
-
 
 }
