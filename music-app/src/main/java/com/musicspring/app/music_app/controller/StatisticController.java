@@ -2,7 +2,10 @@ package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.model.dto.response.SongResponse;
+import com.musicspring.app.music_app.model.entity.ArtistEntity;
+import com.musicspring.app.music_app.model.enums.ReactionType;
 import com.musicspring.app.music_app.service.StatisticService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,7 +67,7 @@ public class StatisticController {
                     )
             )
     })
-    @GetMapping("/topSongs")
+    @GetMapping("/songs/mostReviewed")
     public ResponseEntity<Page<SongResponse>> geMostReviewedSongs(
             @Parameter(description = "Number of items per page", example = "3")
             @RequestParam(defaultValue = "3") int size,
@@ -105,7 +108,7 @@ public class StatisticController {
                     )
             )
     })
-    @GetMapping("/topAlbums")
+    @GetMapping("/albums/mostReviewed")
     public ResponseEntity<Page<AlbumResponse>> getMostReviewedAlbums(
             @Parameter(description = "Number of items per page", example = "3")
             @RequestParam(defaultValue = "3") int size,
@@ -114,5 +117,31 @@ public class StatisticController {
 
         Pageable pageable = PageRequest.of(pageNumber, size);
         return ResponseEntity.ok(statisticService.getMostReviewedAlbums(pageable));
+    }
+
+    @Operation(
+            summary = "Get top artists by reaction type",
+            description = "Retrieve a paginated list of artists ranked by the total number of reactions of a specific type (e.g., LIKE, LOVE, etc.) across all their albums and songs.",
+            tags = {"Artists"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of artists",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input or request parameters",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @GetMapping("/artists/mostReacted")
+    public ResponseEntity<Page<ArtistResponse>> getTopArtists(
+            @Parameter(description = "Reaction type to filter by (e.g., LIKE, LOVE, etc.)", example = "LIKE", required = true)
+            @RequestParam ReactionType reactionType,
+            @Parameter(description = "Number of items per page", example = "3")
+            @RequestParam(defaultValue = "3") int size,
+            @Parameter(description = "Page number to retrieve (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, size);
+        return ResponseEntity.ok(statisticService.getTopArtistsByReactionType(reactionType, pageable));
     }
 }
