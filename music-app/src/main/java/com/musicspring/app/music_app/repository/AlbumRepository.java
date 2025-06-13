@@ -19,6 +19,7 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
             "FROM AlbumEntity a " +
             "LEFT JOIN AlbumReviewEntity r ON a.albumId = r.album.albumId " +
             "GROUP BY a " +
+            "HAVING COUNT(r) > 0 " +
             "ORDER BY COUNT(r) DESC")
     Page<AlbumEntity> findTopReviewedAlbums(Pageable pageable);
 
