@@ -72,45 +72,46 @@ public class ReactionService {
     }
 
     @Transactional
-    public ReactionResponse createReaction(ReactionRequest reactionRequest, Long reactedId) {
-
+    public ReactionResponse createReviewReaction(ReactionRequest reactionRequest, Long reviewId) {
         AuthService.validateRequestUserOwnership(reactionRequest.getUserId());
 
-        UserEntity userEntity = userRepository.findById(reactionRequest.getUserId())
+        UserEntity user = userRepository.findById(reactionRequest.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + reactionRequest.getUserId() + " not found."));
 
-        if (reactionRequest.getReactedType() == ReactedType.REVIEW) {
-            ReviewEntity reviewEntity = reviewRepository.findById(reactedId)
-                    .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reactedId + " not found."));
+        ReviewEntity review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found."));
 
-            // Check if reaction already exists - fail if it does
-            Optional<ReactionEntity> existingReaction = reactionRepository.findByUserAndReview(userEntity, reviewEntity);
-            if (existingReaction.isPresent()) {
-                throw new IllegalStateException("User already has a reaction on this review");
-            }
+        reactionRepository.findByUserAndReview(user, review).ifPresent(r -> {
+            throw new IllegalStateException("User already has a reaction on this review.");
+        });
 
-            ReactionEntity reactionEntity = reactionMapper.toEntity(reactionRequest, userEntity, reviewEntity);
-            reactionRepository.save(reactionEntity);
-            return reactionMapper.toResponse(reactionEntity);
+        ReactionEntity reaction = reactionMapper.toEntity(reactionRequest, user, review);
+        reactionRepository.save(reaction);
 
-        } else if (reactionRequest.getReactedType() == ReactedType.COMMENT) {
-            CommentEntity commentEntity = commentRepository.findById(reactedId)
-                    .orElseThrow(() -> new EntityNotFoundException("Comment with ID " + reactedId + " not found."));
-
-            // Check if reaction already exists - fail if it does
-            Optional<ReactionEntity> existingReaction = reactionRepository.findByUserAndComment(userEntity, commentEntity);
-            if (existingReaction.isPresent()) {
-                throw new IllegalStateException("User already has a reaction on this comment");
-            }
-            
-            ReactionEntity reactionEntity = reactionMapper.toEntity(reactionRequest, userEntity, commentEntity);
-            reactionRepository.save(reactionEntity);
-            return reactionMapper.toResponse(reactionEntity);
-
-        } else {
-            throw new IllegalArgumentException("Invalid ReactedType: " + reactionRequest.getReactedType());
-        }
+        return reactionMapper.toResponse(reaction);
     }
+
+    @Transactional
+    public ReactionResponse createCommentReaction(ReactionRequest reactionRequest, Long commentId) {
+        AuthService.validateRequestUserOwnership(reactionRequest.getUserId());
+
+        UserEntity user = userRepository.findById(reactionRequest.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + reactionRequest.getUserId() + " not found."));
+
+        CommentEntity comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment with ID " + commentId + " not found."));
+
+        reactionRepository.findByUserAndComment(user, comment).ifPresent(r -> {
+            throw new IllegalStateException("User already has a reaction on this comment.");
+        });
+
+        ReactionEntity reaction = reactionMapper.toEntity(reactionRequest, user, comment);
+        reactionRepository.save(reaction);
+
+        return reactionMapper.toResponse(reaction);
+    }
+
+
 
     @Transactional
     public ReactionResponse updateReaction(Long reactionId, ReactionType newReactionType) {

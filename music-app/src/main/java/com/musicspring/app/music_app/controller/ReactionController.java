@@ -124,8 +124,14 @@ public class ReactionController {
     public ResponseEntity<Page<ReactionResponse>> getReactionsByReview(
             @Parameter(description = "Review ID", example = "10")
             @PathVariable Long reviewId,
-            @Parameter(description = "Pagination information", hidden = true)
-            Pageable pageable) {
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number to retrieve (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @Parameter(description = "Field to sort by", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sort
+    ) {
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         Page<ReactionResponse> reactions = reactionService.findByReviewId(reviewId, pageable);
         return ResponseEntity.ok(reactions);
     }
@@ -161,8 +167,14 @@ public class ReactionController {
     public ResponseEntity<Page<ReactionResponse>> getReactionsByComment(
             @Parameter(description = "Comment ID", example = "15")
             @PathVariable Long commentId,
-            Pageable pageable
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number to retrieve (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @Parameter(description = "Field to sort by", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sort
     ) {
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         Page<ReactionResponse> reactions = reactionService.findByCommentId(commentId, pageable);
         return ResponseEntity.ok(reactions);
     }
@@ -244,8 +256,14 @@ public class ReactionController {
     public ResponseEntity<Page<ReactionResponse>> getReactionsByUserId(
             @Parameter(description = "User ID", example = "1")
             @PathVariable Long userId,
-            Pageable pageable
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number to retrieve (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @Parameter(description = "Field to sort by", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sort
     ) {
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         Page<ReactionResponse> reactions = reactionService.findReactionsByUserId(userId, pageable);
         return ResponseEntity.ok(reactions);
     }
@@ -278,15 +296,13 @@ public class ReactionController {
     })
     @PostMapping("/reviews/{reviewId}/reactions")
     public ResponseEntity<ReactionResponse> createReactionToReview(
-            @Parameter(description = "Review ID", example = "10")
-            @PathVariable Long reviewId,
-            @Parameter(description = "Reaction request data")
-            @RequestBody ReactionRequest request) {
-
-        request.setReactedType(ReactedType.REVIEW);
-        ReactionResponse response = reactionService.createReaction(request, reviewId);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+            @RequestBody ReactionRequest request,
+            @PathVariable Long reviewId
+    ) {
+        ReactionResponse response = reactionService.createReviewReaction(request, reviewId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @Operation(
             summary = "Update a reaction on a review",
@@ -380,15 +396,13 @@ public class ReactionController {
     })
     @PostMapping("/comments/{commentId}/reactions")
     public ResponseEntity<ReactionResponse> createReactionToComment(
-            @Parameter(description = "Comment ID", example = "15")
-            @PathVariable Long commentId,
-            @Parameter(description = "Reaction request data")
-            @RequestBody ReactionRequest request) {
-
-        request.setReactedType(ReactedType.COMMENT);
-        ReactionResponse response = reactionService.createReaction(request, commentId);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+            @RequestBody ReactionRequest request,
+            @PathVariable Long commentId
+    ) {
+        ReactionResponse response = reactionService.createCommentReaction(request, commentId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @Operation(
             summary = "Update a reaction on a comment",
