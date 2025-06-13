@@ -256,8 +256,14 @@ public class ReactionController {
     public ResponseEntity<Page<ReactionResponse>> getReactionsByUserId(
             @Parameter(description = "User ID", example = "1")
             @PathVariable Long userId,
-            Pageable pageable
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number to retrieve (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @Parameter(description = "Field to sort by", example = "createdAt")
+            @RequestParam(defaultValue = "createdAt") String sort
     ) {
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         Page<ReactionResponse> reactions = reactionService.findReactionsByUserId(userId, pageable);
         return ResponseEntity.ok(reactions);
     }
