@@ -162,6 +162,26 @@ public class UserController {
 
 
 
+    @Operation(
+            summary = "Search users by username",
+            description = "Performs a case-insensitive search for users whose usernames contain the specified query string."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Search completed successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
     @GetMapping("/search")
     public ResponseEntity<Page<UserResponse>> searchUsers(
             @Parameter(description = "Search query for username", example = "john")

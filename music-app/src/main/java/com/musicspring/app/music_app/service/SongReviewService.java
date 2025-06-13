@@ -165,8 +165,10 @@ public class SongReviewService {
         validateIdentifiers(songId, spotifyId);
 
         if (songId != null) {
+            songRepository.findById(songId).orElseThrow(() -> new EntityNotFoundException("Song with ID: " + songId + " not found."));
             return songReviewMapper.toResponsePage(songReviewRepository.findBySong_Id(songId, pageable));
         } else {
+            songRepository.findBySpotifyId(spotifyId).orElseThrow(() -> new EntityNotFoundException("Song with spotifyId: " + spotifyId + " not found."));
             return songReviewMapper.toResponsePage(songReviewRepository.findBySong_SpotifyId(spotifyId, pageable));
         }
     }
@@ -180,6 +182,7 @@ public class SongReviewService {
     }
 
     public Page<SongReviewResponse> findByUserId(Long songId, Pageable pageable){
+        userRepository.findById(songId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + songId + " not found."));
         return songReviewMapper.toResponsePage(songReviewRepository.findByUser_UserId(songId,pageable));
     }
 }

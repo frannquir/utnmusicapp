@@ -75,7 +75,7 @@ public class SongController {
             @Parameter(description = "Page number (0-based)", example = "0")
             @RequestParam int pageNumber,
 
-            @Parameter(description = "Field name to sort by", example = "title")
+            @Parameter(description = "Field name to sort by", example = "songId")
             @RequestParam String sort
     ) {
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));

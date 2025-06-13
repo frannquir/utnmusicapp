@@ -16,8 +16,10 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,7 +41,7 @@ public class AuthService {
 
     @Autowired
     public AuthService(CredentialRepository credentialsRepository,
-                       AuthenticationManager authenticationManager, 
+                       AuthenticationManager authenticationManager,
                        JwtService jwtService,
                        UserRepository userRepository,
                        UserMapper userMapper,
@@ -55,7 +57,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
     }
-    
+
     public CredentialEntity authenticate(AuthRequest input) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -64,21 +66,22 @@ public class AuthService {
                 )
         );
         return credentialsRepository.findByEmail(input.emailOrUsername())
-                .orElseGet(()->credentialsRepository.findByUsername(input.emailOrUsername())
-                .orElseThrow(()->new UsernameNotFoundException("User not found")));
+                .orElseGet(() -> credentialsRepository.findByUsername(input.emailOrUsername())
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found")));
     }
+
     @Transactional
     public AuthResponse refreshAccessToken(String refreshToken) {
         String username = jwtService.extractUsername(refreshToken);
 
         CredentialEntity credentialEntity = credentialsRepository.findByEmail(username)
-                .orElseThrow(()-> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if(!credentialEntity.getRefreshToken().equals(refreshToken)) {
+        if (!credentialEntity.getRefreshToken().equals(refreshToken)) {
             throw new IllegalArgumentException("Refresh token does not match");
         }
 
-        if (!jwtService.validateRefreshToken(refreshToken,credentialEntity)) {
+        if (!jwtService.validateRefreshToken(refreshToken, credentialEntity)) {
             throw new IllegalArgumentException("Invalid or expired refresh token");
         }
 
@@ -86,8 +89,8 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(credentialEntity);
         credentialEntity.setRefreshToken(newRefreshToken);
         credentialsRepository.save(credentialEntity);
-      
-        return new AuthResponse(newAccessToken, newRefreshToken,credentialEntity.getId(),credentialEntity.getUsername(),credentialEntity.getEmail());
+
+        return new AuthResponse(newAccessToken, newRefreshToken, credentialEntity.getId(), credentialEntity.getUsername(), credentialEntity.getEmail());
     }
 
     @Transactional

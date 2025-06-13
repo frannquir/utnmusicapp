@@ -125,14 +125,21 @@ public class AlbumReviewService {
     }
 
     public Page<AlbumReviewResponse> findByAlbumId(Long albumId, Pageable pageable) {
+        if(albumReviewRepository.findByAlbum_AlbumId(albumId,pageable).isEmpty()){
+            throw new EntityNotFoundException("Album with ID: " + albumId + " not found.");
+        }
         return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_AlbumId(albumId, pageable));
     }
 
     public Page<AlbumReviewResponse> findBySpotifyId (String spotifyId, Pageable pageable){
+        if(albumReviewRepository.findByAlbum_SpotifyId(spotifyId,pageable).isEmpty()){
+            throw new EntityNotFoundException("Album with spotifyId: " + spotifyId + " not found.");
+        }
         return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_SpotifyId(spotifyId,pageable));
     }
 
     public Page<AlbumReviewResponse> findByUserId(Long userId, Pageable pageable) {
+        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found."));
         return albumReviewMapper.toResponsePage(albumReviewRepository.findByUser_UserId(userId, pageable));
     }
 }
