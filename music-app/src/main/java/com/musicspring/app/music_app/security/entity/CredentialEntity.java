@@ -73,7 +73,8 @@ public class CredentialEntity implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+//        return email;
+        return user.getUsername();
     }
 
     @Override

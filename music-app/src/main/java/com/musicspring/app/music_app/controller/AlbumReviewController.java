@@ -219,7 +219,7 @@ public class AlbumReviewController {
             @RequestParam int size,
             @Parameter(description = "Page number to retrieve (0-based)", example = "0", required = true)
             @RequestParam int pageNumber,
-            @Parameter(description = "Field to sort by", example = "date", required = true)
+            @Parameter(description = "Field to sort by", example = "reviewId", required = true)
             @RequestParam String sort) {
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         Page<AlbumReviewResponse> albumReviewResponsePage = albumReviewService.findByUserId(userId, pageable);
