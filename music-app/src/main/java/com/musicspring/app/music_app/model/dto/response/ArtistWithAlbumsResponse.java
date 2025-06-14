@@ -8,11 +8,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtistWithSongsResponse {
+public class ArtistWithAlbumsResponse {
     private Long artistId;
     private String name;
     private Integer followers;
     private String imageUrl;
-    private List<SongResponse> songs;
+    private List<AlbumResponse> albums;
 
 }

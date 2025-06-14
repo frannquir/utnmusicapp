@@ -19,10 +19,10 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
 
     @Query("SELECT a " +
             "FROM ArtistEntity a " +
-            "LEFT JOIN SongEntity s ON s.artistName = a.name " +
+            "LEFT JOIN AlbumEntity al ON al.artist = a " +
+            "LEFT JOIN SongEntity s ON s.album = al " +
             "LEFT JOIN SongReviewEntity sr ON s.songId = sr.song.songId " +
             "LEFT JOIN ReactionEntity r1 ON sr.reviewId = r1.review.reviewId " +
-            "LEFT JOIN AlbumEntity al ON al.artistName = a.name " +
             "LEFT JOIN AlbumReviewEntity ar ON al.albumId = ar.album.albumId " +
             "LEFT JOIN ReactionEntity r2 ON ar.reviewId = r2.review.reviewId " +
             "WHERE (r1.reactionType = :reactionType OR r2.reactionType = :reactionType) " +

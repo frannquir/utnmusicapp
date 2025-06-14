@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -35,14 +36,17 @@ public class SongReviewService {
     private final AlbumRepository albumRepository;
     private final ArtistMapper artistMapper;
     private final ArtistRepository artistRepository;
-
     @Autowired
     public SongReviewService(SongReviewRepository songReviewRepository,
                              SongRepository songRepository,
                              UserRepository userRepository,
                              SongReviewMapper songReviewMapper,
                              SongMapper songMapper,
-                             SpotifyService spotifyService, AlbumMapper albumMapper, AlbumRepository albumRepository, ArtistMapper artistMapper, ArtistRepository artistRepository) {
+                             SpotifyService spotifyService, 
+                             AlbumMapper albumMapper, 
+                             AlbumRepository albumRepository, 
+                             ArtistMapper artistMapper, 
+                             ArtistRepository artistRepository) {
         this.songReviewRepository = songReviewRepository;
         this.songRepository = songRepository;
         this.userRepository = userRepository;
@@ -64,13 +68,14 @@ public class SongReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("Song review with ID: " + id + " not found.")));
     }
 
+    @Transactional
     public void deleteById(Long id) {
         SongReviewEntity songReviewEntity = songReviewRepository.findById(id)
                 .orElseThrow(()-> new EntityNotFoundException("Song review with ID: " + id + " not found."));
         songReviewEntity.setActive(false);
         songReviewRepository.save(songReviewEntity);
     }
-
+    @Transactional
     public SongReviewResponse createSongReview(Long songId, String spotifyId,
                                                SongReviewRequest songReviewRequest) {
 
@@ -89,10 +94,7 @@ public class SongReviewService {
         SongEntity songEntity = findOrCreateSongEntity(songId, spotifyId);
 
         SongReviewEntity songReviewEntity = songReviewMapper.toEntity(songReviewRequest, userEntity, songEntity);
-
         SongReviewEntity savedEntity = songReviewRepository.save(songReviewEntity);
-
-
 
         return songReviewMapper.toResponse(savedEntity);
     }
@@ -108,7 +110,6 @@ public class SongReviewService {
             throw new IllegalArgumentException("Exactly one identifier (songId or spotifyId) must be provided");
         }
     }
-
     private SongEntity findOrCreateSongEntity(Long songId, String spotifyId) {
         if (songId != null) {
             return songRepository.findById(songId)
@@ -125,24 +126,27 @@ public class SongReviewService {
 
     private SongEntity createSongFromSpotify(String spotifyId) {
         SongRequest songRequest = spotifyService.getSong(spotifyId);
-        createEntitiesFromSpotify(songRequest);
-        SongEntity newSong = songMapper.toEntity(songRequest);
-        return songRepository.save(newSong);
-    }
-
-    private void createEntitiesFromSpotify(SongRequest songRequest) {
-        if(albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId()).isEmpty()){
-            AlbumRequest albumRequest = spotifyService.getAlbum(songRequest.getAlbumSpotifyId());
-            AlbumEntity albumEntity = albumMapper.requestToEntity(albumRequest);
-            albumRepository.save(albumEntity);
-        }
-        if(artistRepository.findBySpotifyId(songRequest.getArtistSpotifyId()).isEmpty()){
+        
+        if (artistRepository.findBySpotifyId(songRequest.getArtistSpotifyId()).isEmpty()) {
             ArtistRequest artistRequest = spotifyService.getArtist(songRequest.getArtistSpotifyId());
             ArtistEntity artistEntity = artistMapper.toEntity(artistRequest);
             artistRepository.save(artistEntity);
         }
+        
+        if (albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId()).isEmpty()) {
+            AlbumRequest albumRequest = spotifyService.getAlbum(songRequest.getAlbumSpotifyId());
+            AlbumEntity albumEntity = albumMapper.requestToEntity(albumRequest);
+            albumEntity.setArtist(artistRepository.findBySpotifyId(songRequest.getArtistSpotifyId())
+                    .orElseThrow(() -> new EntityNotFoundException("Artist not found")));
+            albumRepository.save(albumEntity);
+        }
+        
+        SongEntity newSong = songMapper.toEntity(songRequest);
+        newSong.setAlbum(albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId())
+                .orElseThrow(() -> new EntityNotFoundException("Album not found")));
+        
+        return songRepository.save(newSong);
     }
-
     public Page<SongReviewResponse> findBySong(Long songId, String spotifyId, Pageable pageable) {
         validateIdentifiers(songId, spotifyId);
 
@@ -155,8 +159,8 @@ public class SongReviewService {
         }
     }
 
-    public Page<SongReviewResponse> findByUserId(Long songId, Pageable pageable){
-        userRepository.findById(songId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + songId + " not found."));
-        return songReviewMapper.toResponsePage(songReviewRepository.findByUser_UserId(songId,pageable));
+    public Page<SongReviewResponse> findByUserId(Long userId, Pageable pageable){
+        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found."));
+        return songReviewMapper.toResponsePage(songReviewRepository.findByUser_UserId(userId, pageable));
     }
 }
