@@ -125,7 +125,7 @@ This project is developed as part of UTN coursework.
 - Manuel Palacios Inza
 - Pablo Salom Pita
 - Julieta Ramos
-- Valient Cerezuela
+- Valentin Cerezuela
 
 ---
 
