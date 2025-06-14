@@ -25,10 +25,6 @@ public class AlbumRequest {
             example = "Ill Communication")
     private String title;
 
-    @NotBlank(message = "Artist id can not be empty.")
-    @Schema(description = "Id of the artist in the database", example = "1")
-    private Long artistId;
-
     @Size(max = 255, message = "Image URL must be at most 255 characters.")
     @Schema(description = "URL of the album cover image", example = "https://i.scdn.co/image/ab67616d0000b273e1cd962a266e720dfeb77b6f")
     private String imageUrl;

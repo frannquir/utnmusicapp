@@ -29,6 +29,6 @@ public class ArtistEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @OneToMany(mappedBy = "artist")
+    @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY)
     private List<AlbumEntity> albums;
 }

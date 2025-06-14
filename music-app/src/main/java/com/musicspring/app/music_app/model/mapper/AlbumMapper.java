@@ -14,13 +14,6 @@ import java.util.List;
 @Component
 public class AlbumMapper {
 
-    private final ArtistService artistService;
-
-    @Autowired
-    public AlbumMapper(ArtistService artistService) {
-        this.artistService = artistService;
-    }
-
 
     public AlbumResponse toResponse(AlbumEntity album){
         return AlbumResponse.builder()
@@ -51,7 +44,6 @@ public class AlbumMapper {
         return AlbumEntity.builder()
                 .spotifyId(albumRequest.getSpotifyId())
                 .title(albumRequest.getTitle())
-                .artist(artistService.findById(albumRequest.getArtistId()))
                 .imageUrl(albumRequest.getImageUrl())
                 .spotifyLink(albumRequest.getSpotifyLink())
                 .releaseDate(albumRequest.getReleaseDate())

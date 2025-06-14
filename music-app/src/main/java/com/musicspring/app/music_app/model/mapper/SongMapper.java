@@ -15,13 +15,6 @@ import java.util.Date;
 @Component
 public class SongMapper {
 
-    private final AlbumService albumService;
-
-    @Autowired
-    public SongMapper(AlbumService albumService) {
-        this.albumService = albumService;
-    }
-
 
     public SongResponse toResponse(SongEntity song) {
         return SongResponse.builder()
@@ -46,7 +39,6 @@ public class SongMapper {
         return SongEntity.builder()
                 .spotifyId(song.getSpotifyId())
                 .name(song.getName())
-                .album(albumService.findByIdEntity(song.getAlbumId()))
                 .imageUrl(song.getImageUrl())
                 .durationMs(song.getDurationMs())
                 .previewUrl(song.getPreviewUrl())

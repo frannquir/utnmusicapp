@@ -40,7 +40,7 @@ public class AlbumEntity {
     @JoinColumn(name = "artist_id", nullable = false)
     private ArtistEntity artist;
 
-    @OneToMany(mappedBy = "album")
+    @OneToMany(mappedBy = "album", fetch = FetchType.LAZY)
     private List<SongEntity> songs;
 
 }
