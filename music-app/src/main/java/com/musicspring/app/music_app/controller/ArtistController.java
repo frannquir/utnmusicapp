@@ -156,7 +156,13 @@ public class ArtistController {
     public ResponseEntity<Page<ArtistResponse>> searchArtistsByName(
             @Parameter(description = "Name or partial name to search for", example = "Eminem")
             @RequestParam String name,
-            Pageable pageable) {
+
+            @Parameter(description = "Page number (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "Page size", example = "10")
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page,size);
         Page<ArtistResponse> artistsPage = artistService.searchArtists(name, pageable);
         return ResponseEntity.ok(artistsPage);
     }
