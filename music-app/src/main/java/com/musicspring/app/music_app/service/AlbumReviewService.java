@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
@@ -61,7 +62,7 @@ public class AlbumReviewService {
     }
 
     public AlbumReviewResponse createAlbumReview(Long albumId, String spotifyId,
-                                               AlbumReviewRequest albumReviewRequest) {
+                                                 AlbumReviewRequest albumReviewRequest) {
         validateIdentifiers(albumId, spotifyId);
 
         if (albumReviewRequest.getUserId() == null) {
@@ -111,7 +112,7 @@ public class AlbumReviewService {
     }
 
     private void createEntitiesFromSpotify(AlbumRequest albumRequest) {
-        if(artistRepository.findBySpotifyId(albumRequest.getArtistSpotifyId()).isEmpty()){
+        if (artistRepository.findBySpotifyId(albumRequest.getArtistSpotifyId()).isEmpty()) {
             ArtistRequest artistRequest = spotifyService.getArtist(albumRequest.getArtistSpotifyId());
             ArtistEntity artistEntity = artistMapper.toEntity(artistRequest);
             artistRepository.save(artistEntity);
@@ -119,14 +120,21 @@ public class AlbumReviewService {
     }
 
     public Page<AlbumReviewResponse> findByAlbumId(Long albumId, Pageable pageable) {
+        if (albumReviewRepository.findByAlbum_AlbumId(albumId, pageable).isEmpty()) {
+            throw new EntityNotFoundException("Album with ID: " + albumId + " not found.");
+        }
         return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_AlbumId(albumId, pageable));
     }
 
-    public Page<AlbumReviewResponse> findBySpotifyId (String spotifyId, Pageable pageable){
-        return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_SpotifyId(spotifyId,pageable));
+    public Page<AlbumReviewResponse> findBySpotifyId(String spotifyId, Pageable pageable) {
+        if (albumReviewRepository.findByAlbum_SpotifyId(spotifyId, pageable).isEmpty()) {
+            throw new EntityNotFoundException("Album with spotifyId: " + spotifyId + " not found.");
+        }
+        return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_SpotifyId(spotifyId, pageable));
     }
 
     public Page<AlbumReviewResponse> findByUserId(Long userId, Pageable pageable) {
+        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found."));
         return albumReviewMapper.toResponsePage(albumReviewRepository.findByUser_UserId(userId, pageable));
     }
 }
