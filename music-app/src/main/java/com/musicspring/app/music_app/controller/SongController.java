@@ -182,7 +182,7 @@ public class SongController {
     })
     @GetMapping("/search")
     public ResponseEntity<Page<SongResponse>> searchSongs(
-            @Parameter(description = "Search query keyword", example = "Coldplay")
+            @Parameter(description = "Search query keyword", example = "Starboy")
             @RequestParam String query,
             @Parameter(hidden = true)
             Pageable pageable

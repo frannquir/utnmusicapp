@@ -2,9 +2,7 @@ package com.musicspring.app.music_app.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "artists")
@@ -31,15 +29,6 @@ public class ArtistEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
-
-    @ManyToMany
-    @JoinTable(
-            name = "artist_song",
-            joinColumns = @JoinColumn(name = "artist_id"),
-            inverseJoinColumns = @JoinColumn(name = "song_id")
-    )
-    @Builder.Default
-    private Set<SongEntity> songs = new HashSet<>();
-
-
+    @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY)
+    private List<AlbumEntity> albums;
 }

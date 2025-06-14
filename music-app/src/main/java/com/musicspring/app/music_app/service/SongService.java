@@ -44,7 +44,7 @@ public class SongService  {
 
 
     public Page<SongResponse> searchSongs(String query, Pageable pageable) {
-        Page<SongEntity> songPage = songRepository.findByNameContainingIgnoreCaseOrArtistNameContainingIgnoreCase(
+        Page<SongEntity> songPage = songRepository.findByNameContainingIgnoreCase(
                 query, query, pageable
         );
 

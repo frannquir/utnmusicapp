@@ -1,7 +1,7 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistWithSongsResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistWithAlbumsResponse;
 import com.musicspring.app.music_app.service.ArtistService;
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -122,24 +122,6 @@ public class ArtistController {
             @PathVariable Long id) {
         artistService.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-
-    @Operation(summary = "Retrieve an artist along with their songs", description = "Fetches an artist's details including a list of their songs.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Artist and songs retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ArtistWithSongsResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Artist not found",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
-            @ApiResponse(responseCode = "500", description = "Internal server error",
-                    content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
-    })
-    @GetMapping("/{id}/songs")
-    public ResponseEntity<ArtistWithSongsResponse> getArtistWithSongs(
-            @Parameter(description = "ID of the artist", example = "1")
-            @PathVariable Long id) {
-            return ResponseEntity.ok(artistService.getArtistWithSongs(id));
-
     }
 
     @Operation(summary = "Search artists by name", description = "Searches for artists matching the provided name (partial or full) with pagination support.")

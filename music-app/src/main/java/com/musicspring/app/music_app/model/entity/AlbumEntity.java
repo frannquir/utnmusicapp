@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "albums")
@@ -26,9 +27,6 @@ public class AlbumEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "artist_name", nullable = false)
-    private String artistName;
-
     @Column(name = "image_url")
     private String imageUrl;
 
@@ -37,5 +35,12 @@ public class AlbumEntity {
 
     @Column(name = "release_date")
     private LocalDate releaseDate;
+
+    @ManyToOne
+    @JoinColumn(name = "artist_id", nullable = false)
+    private ArtistEntity artist;
+
+    @OneToMany(mappedBy = "album", fetch = FetchType.LAZY)
+    private List<SongEntity> songs;
 
 }
