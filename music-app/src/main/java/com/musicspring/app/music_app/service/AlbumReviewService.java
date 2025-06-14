@@ -107,7 +107,7 @@ public class AlbumReviewService {
     private AlbumEntity createAlbumFromSpotify(String spotifyId) {
         AlbumRequest albumRequest = spotifyService.getAlbum(spotifyId);
         createEntitiesFromSpotify(albumRequest);
-        AlbumEntity newAlbum = albumMapper.toEntity(albumRequest);
+        AlbumEntity newAlbum = albumMapper.requestToEntity(albumRequest);
         return albumRepository.save(newAlbum);
     }
 

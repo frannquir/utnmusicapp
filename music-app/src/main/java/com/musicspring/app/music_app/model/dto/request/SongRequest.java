@@ -23,13 +23,9 @@ public class SongRequest {
     @Schema(description = "Name of the song", example = "Shape of You")
     private String name;
 
-    @NotBlank(message = "Artist name can not be empty.")
-    @Schema(description = "Name of the artist", example = "Ed Sheeran")
-    private String artistName;
-
-    @NotBlank(message = "Album name can not be empty.")
-    @Schema(description = "Name of the album", example = "÷ (Divide)")
-    private String albumName;
+    @NotBlank(message = "Album id can not be empty.")
+    @Schema(description = "Id of the album in the database", example = "1")
+    private Long albumId;
 
     @Size(max = 255, message = "Image URL must be at most 255 characters.")
     @Schema(description = "URL of the album or song cover image", example = "https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96")

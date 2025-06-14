@@ -27,12 +27,6 @@ public class SongEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "artist_name", nullable = false)
-    private String artistName;
-
-    @Column(name = "album_name")
-    private String albumName;
-
     @Column(name = "image_url")
     private String imageUrl;
 
@@ -47,5 +41,10 @@ public class SongEntity {
 
     @Column(name = "release_date")
     private LocalDate releaseDate;
+
+    @ManyToOne
+    @JoinColumn(name = "album_id")
+    private AlbumEntity album;
+
 
 }

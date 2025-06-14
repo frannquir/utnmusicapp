@@ -26,12 +26,7 @@ public class SpotifyMapper {
         albumRequest.setTitle(spotifyAlbum.getName());
 
         ArtistSimplified[] artists = spotifyAlbum.getArtists();
-        if (artists != null && artists.length > 0) {
-            albumRequest.setArtistSpotifyId(artists[0].getId());
-            albumRequest.setArtistName(artists[0].getName());
-        } else {
-            albumRequest.setArtistName("Unknown artist");
-        }
+        albumRequest.setArtistSpotifyId(artists[0].getId());
         // Get image URL from Spotify
         String imageUrl;
         Image[] images = spotifyAlbum.getImages();
@@ -61,12 +56,8 @@ public class SpotifyMapper {
         albumRequest.setTitle(spotifyAlbum.getName());
 
         ArtistSimplified[] artists = spotifyAlbum.getArtists();
-        if (artists != null && artists.length > 0) {
-            albumRequest.setArtistName(artists[0].getName());
-            albumRequest.setArtistSpotifyId(artists[0].getId());
-        } else {
-            albumRequest.setArtistName("Unknown artist");
-        }
+        albumRequest.setArtistSpotifyId(artists[0].getId());
+
         // Get image URL from Spotify
         String imageUrl;
         Image[] images = spotifyAlbum.getImages();
@@ -126,16 +117,10 @@ public class SpotifyMapper {
         songRequest.setPreviewUrl(spotifyTrack.getPreviewUrl());
         
         ArtistSimplified[] artists = spotifyTrack.getArtists();
-        if (artists != null && artists.length > 0) {
-            songRequest.setArtistName(artists[0].getName());
-            songRequest.setArtistSpotifyId(artists[0].getId());
-        } else {
-            songRequest.setArtistName("Unknown artist");
-        }
+        songRequest.setArtistSpotifyId(artists[0].getId());
         
         AlbumSimplified album = spotifyTrack.getAlbum();
         if (album != null) {
-            songRequest.setAlbumName(album.getName());
             songRequest.setAlbumSpotifyId(album.getId());
             Image[] images = album.getImages();
             if (images != null && images.length > 0) {

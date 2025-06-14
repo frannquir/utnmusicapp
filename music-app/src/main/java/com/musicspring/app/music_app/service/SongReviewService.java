@@ -131,15 +131,16 @@ public class SongReviewService {
     }
 
     private void createEntitiesFromSpotify(SongRequest songRequest) {
-        if(albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId()).isEmpty()){
-            AlbumRequest albumRequest = spotifyService.getAlbum(songRequest.getAlbumSpotifyId());
-            AlbumEntity albumEntity = albumMapper.requestToEntity(albumRequest);
-            albumRepository.save(albumEntity);
-        }
         if(artistRepository.findBySpotifyId(songRequest.getArtistSpotifyId()).isEmpty()){
             ArtistRequest artistRequest = spotifyService.getArtist(songRequest.getArtistSpotifyId());
             ArtistEntity artistEntity = artistMapper.toEntity(artistRequest);
             artistRepository.save(artistEntity);
+        }
+
+        if(albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId()).isEmpty()){
+            AlbumRequest albumRequest = spotifyService.getAlbum(songRequest.getAlbumSpotifyId());
+            AlbumEntity albumEntity = albumMapper.requestToEntity(albumRequest);
+            albumRepository.save(albumEntity);
         }
     }
 

@@ -3,6 +3,8 @@ package com.musicspring.app.music_app.model.mapper;
 import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.entity.AlbumEntity;
+import com.musicspring.app.music_app.service.ArtistService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -11,12 +13,21 @@ import java.util.List;
 
 @Component
 public class AlbumMapper {
+
+    private final ArtistService artistService;
+
+    @Autowired
+    public AlbumMapper(ArtistService artistService) {
+        this.artistService = artistService;
+    }
+
+
     public AlbumResponse toResponse(AlbumEntity album){
         return AlbumResponse.builder()
                 .albumId(album.getAlbumId())
                 .spotifyId(album.getSpotifyId())
                 .title(album.getTitle())
-                .artistName(album.getArtistName())
+                .artistName(album.getArtist().getName())
                 .imageUrl(album.getImageUrl())
                 .spotifyLink(album.getSpotifyLink())
                 .releaseDate(album.getReleaseDate())
@@ -40,23 +51,11 @@ public class AlbumMapper {
         return AlbumEntity.builder()
                 .spotifyId(albumRequest.getSpotifyId())
                 .title(albumRequest.getTitle())
-                .artistName(albumRequest.getArtistName())
+                .artist(artistService.findById(albumRequest.getArtistId()))
                 .imageUrl(albumRequest.getImageUrl())
                 .spotifyLink(albumRequest.getSpotifyLink())
                 .releaseDate(albumRequest.getReleaseDate())
                 .build();
     }
-
-    public AlbumEntity toEntity(AlbumRequest album){
-        return AlbumEntity.builder()
-                .spotifyId(album.getSpotifyId())
-                .title(album.getTitle())
-                .artistName(album.getArtistName())
-                .imageUrl(album.getImageUrl())
-                .spotifyLink(album.getSpotifyLink())
-                .releaseDate(album.getReleaseDate())
-                .build();
-    }
-
 }
 

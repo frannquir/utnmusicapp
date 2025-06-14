@@ -1,7 +1,7 @@
 package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistWithSongsResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistWithAlbumsResponse;
 import com.musicspring.app.music_app.model.entity.ArtistEntity;
 import com.musicspring.app.music_app.model.mapper.ArtistMapper;
 import com.musicspring.app.music_app.repository.ArtistRepository;
@@ -21,12 +21,6 @@ public class ArtistService {
                          ArtistMapper artistMapper) {
         this.artistRepository = artistRepository;
         this.artistMapper = artistMapper;
-    }
-
-    public ArtistWithSongsResponse getArtistWithSongs(Long artistId) {
-        ArtistEntity artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new EntityNotFoundException("Artist with ID " + artistId + " not found."));
-        return artistMapper.toArtistWithSongsResponse(artist);
     }
 
     public void deleteById(Long id) {
@@ -59,6 +53,11 @@ public class ArtistService {
                 .findByNameContainingIgnoreCase(query.trim(), pageable);
 
         return artistPage.map(artistMapper::toResponse);
+    }
+
+    public ArtistEntity findById(Long id) {
+        return artistRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Artist with ID " + id + " not found."));
     }
 
 }

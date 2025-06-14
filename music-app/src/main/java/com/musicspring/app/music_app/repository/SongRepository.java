@@ -14,7 +14,7 @@ public interface SongRepository extends JpaRepository<SongEntity, Long> {
 
     Optional<SongEntity> findBySpotifyId(String spotifyId);
 
-    Page<SongEntity> findByNameContainingIgnoreCaseOrArtistNameContainingIgnoreCase(
+    Page<SongEntity> findByNameContainingIgnoreCase(
             String name, String artistName, Pageable pageable);
 
     @Query("SELECT s " +
