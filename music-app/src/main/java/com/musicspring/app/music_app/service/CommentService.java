@@ -3,9 +3,7 @@ package com.musicspring.app.music_app.service;
 import com.musicspring.app.music_app.model.dto.request.CommentPatchRequest;
 import com.musicspring.app.music_app.model.dto.request.CommentRequest;
 import com.musicspring.app.music_app.model.dto.response.CommentResponse;
-import com.musicspring.app.music_app.model.entity.CommentEntity;
-import com.musicspring.app.music_app.model.entity.ReviewEntity;
-import com.musicspring.app.music_app.model.entity.UserEntity;
+import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.enums.CommentType;
 import com.musicspring.app.music_app.model.mapper.CommentMapper;
 import com.musicspring.app.music_app.repository.*;
@@ -64,6 +62,10 @@ public class CommentService {
         ReviewEntity review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found."));
 
+        if (!(review instanceof SongReviewEntity)) {
+            throw new IllegalArgumentException("Review with ID " + reviewId + " is not a song review.");
+        }
+
         CommentEntity comment = commentMapper.toEntity(commentRequest, user, review, CommentType.SONG_REVIEW);
         commentRepository.save(comment);
 
@@ -79,6 +81,10 @@ public class CommentService {
 
         ReviewEntity review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found."));
+
+        if (!(review instanceof AlbumReviewEntity)) {
+            throw new IllegalArgumentException("Review with ID " + reviewId + " is not an album review.");
+        }
 
         CommentEntity comment = commentMapper.toEntity(commentRequest, user, review, CommentType.ALBUM_REVIEW);
         commentRepository.save(comment);
