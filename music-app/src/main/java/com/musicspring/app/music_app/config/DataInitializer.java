@@ -23,9 +23,14 @@ public class DataInitializer {
 
     @PostConstruct
     public void run() {
-        RoleEntity role = RoleEntity.builder()
-                .role(Role.ROLE_USER)
-                .build();
-        roleRepository.save(role);
+//        RoleEntity role = RoleEntity.builder()
+//                .role(Role.ROLE_USER)
+//                .build();
+//        roleRepository.save(role);
+//
+//        RoleEntity role2 = RoleEntity.builder()
+//                .role(Role.ROLE_ADMIN)
+//                .build();
+//        roleRepository.save(role);
     }
 }

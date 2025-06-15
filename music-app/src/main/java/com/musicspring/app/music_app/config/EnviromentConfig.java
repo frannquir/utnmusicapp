@@ -19,6 +19,9 @@ public class EnviromentConfig {
                 Objects.requireNonNull(dotenv.get("GOOGLE_CLIENT_SECRET")));
         System.setProperty("app.oauth2.redirect-uri", Objects.requireNonNull(
                 dotenv.get("APP_OAUTH2_REDIRECT_URI")));
+        System.setProperty("spring.datasource.url",Objects.requireNonNull(dotenv.get("DB_URL")));
+        System.setProperty("spring.datasource.username", Objects.requireNonNull(dotenv.get("DB_USERNAME")));
+        System.setProperty("spring.datasource.password", Objects.requireNonNull(dotenv.get("DB_PASSWORD")));
 
     }
 }
