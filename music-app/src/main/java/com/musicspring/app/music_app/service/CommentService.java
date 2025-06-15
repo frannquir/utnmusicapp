@@ -8,35 +8,30 @@ import com.musicspring.app.music_app.model.entity.ReviewEntity;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.enums.CommentType;
 import com.musicspring.app.music_app.model.mapper.CommentMapper;
-import com.musicspring.app.music_app.repository.AlbumReviewRepository;
-import com.musicspring.app.music_app.repository.CommentRepository;
-import com.musicspring.app.music_app.repository.SongReviewRepository;
-import com.musicspring.app.music_app.repository.UserRepository;
+import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.security.service.AuthService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
-    private final SongReviewRepository songReviewRepository;
-    private final AlbumReviewRepository albumReviewRepository;
+    private final ReviewRepository reviewRepository;
     private final CommentMapper commentMapper;
 
     @Autowired
     public CommentService(CommentRepository commentRepository,
                           UserRepository userRepository,
-                          SongReviewRepository songReviewRepository,
-                          AlbumReviewRepository albumReviewRepository,
+                          ReviewRepository reviewRepository,
                           CommentMapper commentMapper) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
-        this.songReviewRepository = songReviewRepository;
-        this.albumReviewRepository = albumReviewRepository;
+        this.reviewRepository = reviewRepository;
         this.commentMapper = commentMapper;
     }
 
@@ -59,31 +54,36 @@ public class CommentService {
         commentRepository.delete(commentEntity);
     }
 
-    public CommentResponse createComment(Long reviewId, CommentRequest commentRequest) {
-        if (commentRequest.getUserId() == null) {
-            throw new IllegalArgumentException("UserId is required");
-        }
-        if (commentRequest.getCommentType() == null) {
-            throw new IllegalArgumentException("CommentType is required");
-        }
-
+    @Transactional
+    public CommentResponse createSongReviewComment(CommentRequest commentRequest, Long reviewId) {
         AuthService.validateRequestUserOwnership(commentRequest.getUserId());
 
-        UserEntity userEntity = userRepository.findById(commentRequest.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User with ID:" + commentRequest.getUserId() + " not found."));
+        UserEntity user = userRepository.findById(commentRequest.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + commentRequest.getUserId() + " not found."));
 
-        ReviewEntity reviewEntity = switch (commentRequest.getCommentType()) {
-            case SONG_REVIEW -> songReviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new EntityNotFoundException("Song Review with ID " + reviewId + " not found."));
-            case ALBUM_REVIEW -> albumReviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new EntityNotFoundException("Album Review with ID " + reviewId + " not found."));
-        };
+        ReviewEntity review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found."));
 
-        CommentEntity commentEntity = commentMapper.toEntity(commentRequest, userEntity, reviewEntity);
+        CommentEntity comment = commentMapper.toEntity(commentRequest, user, review, CommentType.SONG_REVIEW);
+        commentRepository.save(comment);
 
-        CommentEntity saved = commentRepository.save(commentEntity);
+        return commentMapper.toResponse(comment);
+    }
 
-        return commentMapper.toResponse(saved);
+    @Transactional
+    public CommentResponse createAlbumReviewComment(CommentRequest commentRequest, Long reviewId) {
+        AuthService.validateRequestUserOwnership(commentRequest.getUserId());
+
+        UserEntity user = userRepository.findById(commentRequest.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + commentRequest.getUserId() + " not found."));
+
+        ReviewEntity review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found."));
+
+        CommentEntity comment = commentMapper.toEntity(commentRequest, user, review, CommentType.ALBUM_REVIEW);
+        commentRepository.save(comment);
+
+        return commentMapper.toResponse(comment);
     }
 
     public CommentResponse updateCommentContent(Long commentId, CommentPatchRequest patchRequest) {

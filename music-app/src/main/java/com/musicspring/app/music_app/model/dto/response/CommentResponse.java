@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.model.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.musicspring.app.music_app.model.enums.CommentType;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class CommentResponse {
 
     private String text;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     private CommentType commentType;

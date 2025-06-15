@@ -132,9 +132,7 @@ public class AlbumReviewCommentController {
             @PathVariable Long reviewId,
             @Valid @RequestBody CommentRequest commentRequest) {
 
-        commentRequest.setCommentType(CommentType.ALBUM_REVIEW);
-
-        CommentResponse createdComment = commentService.createComment(reviewId, commentRequest);
+        CommentResponse createdComment = commentService.createAlbumReviewComment(commentRequest, reviewId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 

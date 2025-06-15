@@ -26,9 +26,4 @@ public class CommentRequest {
     @NotBlank(message = "Comment text cannot be blank")
     @Size(min = 1, max = 500)
     private String text;
-
-    @Schema(description = "Type of the comment (song or album review)", example = "SONG_REVIEW")
-    @NotNull(message = "Comment type is required")
-    private CommentType commentType;
-
 }

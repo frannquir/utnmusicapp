@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     //Metodos posibles a implementar si queremos trabajar con reseñas sin diferenciar el tipo (album o cancion)
 
+
+
     Page<ReviewEntity> findByUser_UserId(Long userId, Pageable pageable);
 
     Page<ReviewEntity> findByActiveTrue(Pageable pageable);

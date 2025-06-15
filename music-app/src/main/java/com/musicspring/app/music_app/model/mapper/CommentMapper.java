@@ -5,6 +5,7 @@ import com.musicspring.app.music_app.model.dto.response.CommentResponse;
 import com.musicspring.app.music_app.model.entity.CommentEntity;
 import com.musicspring.app.music_app.model.entity.ReviewEntity;
 import com.musicspring.app.music_app.model.entity.UserEntity;
+import com.musicspring.app.music_app.model.enums.CommentType;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +13,6 @@ import org.springframework.stereotype.Component;
 public class CommentMapper {
 
     public CommentResponse toResponse(CommentEntity comment){
-        if(comment == null) return null;
-
         return CommentResponse.builder()
                 .commentId(comment.getCommentId())
                 .reviewId(comment.getReviewEntity().getReviewId())
@@ -26,21 +25,19 @@ public class CommentMapper {
     }
 
     public Page<CommentResponse> toResponsePage(Page<CommentEntity> commentPage){
-        if(commentPage == null) return null;
-
         return commentPage.map(this::toResponse);
     }
 
     public CommentEntity toEntity(CommentRequest commentRequest,
                                   UserEntity userEntity,
-                                  ReviewEntity reviewEntity){
+                                  ReviewEntity reviewEntity,
+                                  CommentType commentType) {
 
         return CommentEntity.builder()
                 .text(commentRequest.getText())
                 .user(userEntity)
                 .reviewEntity(reviewEntity)
-                .commentType(commentRequest.getCommentType())
+                .commentType(commentType)
                 .build();
     }
-
 }

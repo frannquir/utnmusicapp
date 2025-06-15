@@ -77,7 +77,8 @@ public class SongReviewCommentController {
     public ResponseEntity<CommentResponse> createComment(
             @PathVariable Long reviewId,
             @Valid @RequestBody CommentRequest commentRequest) {
-        CommentResponse createdComment = commentService.createComment(reviewId, commentRequest);
+
+        CommentResponse createdComment = commentService.createSongReviewComment(commentRequest, reviewId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
