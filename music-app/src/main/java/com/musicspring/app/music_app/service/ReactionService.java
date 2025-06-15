@@ -1,6 +1,5 @@
 package com.musicspring.app.music_app.service;
 
-import com.musicspring.app.music_app.model.dto.request.ReactionRequest;
 import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
 import com.musicspring.app.music_app.model.entity.CommentEntity;
 import com.musicspring.app.music_app.model.entity.ReactionEntity;
@@ -17,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class ReactionService {
@@ -72,11 +69,11 @@ public class ReactionService {
     }
 
     @Transactional
-    public ReactionResponse createReviewReaction(ReactionRequest reactionRequest, Long reviewId) {
-        AuthService.validateRequestUserOwnership(reactionRequest.getUserId());
+    public ReactionResponse createReviewReaction(ReactionType reactionType,Long userId, Long reviewId) {
+        AuthService.validateRequestUserOwnership(userId);
 
-        UserEntity user = userRepository.findById(reactionRequest.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User with ID " + reactionRequest.getUserId() + " not found."));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found."));
 
         ReviewEntity review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("Review with ID " + reviewId + " not found."));
@@ -85,18 +82,18 @@ public class ReactionService {
             throw new IllegalStateException("User already has a reaction on this review.");
         });
 
-        ReactionEntity reaction = reactionMapper.toEntity(reactionRequest, user, review);
+        ReactionEntity reaction = reactionMapper.toEntity(reactionType, user, review);
         reactionRepository.save(reaction);
 
         return reactionMapper.toResponse(reaction);
     }
 
     @Transactional
-    public ReactionResponse createCommentReaction(ReactionRequest reactionRequest, Long commentId) {
-        AuthService.validateRequestUserOwnership(reactionRequest.getUserId());
+    public ReactionResponse createCommentReaction(ReactionType reactionType,Long userId, Long commentId) {
+        AuthService.validateRequestUserOwnership(userId);
 
-        UserEntity user = userRepository.findById(reactionRequest.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User with ID " + reactionRequest.getUserId() + " not found."));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found."));
 
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment with ID " + commentId + " not found."));
@@ -105,7 +102,7 @@ public class ReactionService {
             throw new IllegalStateException("User already has a reaction on this comment.");
         });
 
-        ReactionEntity reaction = reactionMapper.toEntity(reactionRequest, user, comment);
+        ReactionEntity reaction = reactionMapper.toEntity(reactionType, user, comment);
         reactionRepository.save(reaction);
 
         return reactionMapper.toResponse(reaction);

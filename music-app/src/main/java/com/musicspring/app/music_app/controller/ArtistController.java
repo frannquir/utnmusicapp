@@ -93,36 +93,7 @@ public class ArtistController {
         return ResponseEntity.ok(artistService.getArtistResponseById(id));
     }
 
-    @Operation(
-            summary = "Delete an artist by its ID",
-            description = "Marks the artist as deleted (soft delete) corresponding to the provided ID. If the artist does not exist, a 404 response is returned."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "204",
-                    description = "Artist deleted successfully. No content is returned."
-            ),
-            @ApiResponse(responseCode = "404",
-                    description = "Artist not found.",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            ),
-            @ApiResponse(responseCode = "500",
-                    description = "Internal server error.",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            )
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArtist(
-            @Parameter(description = "ID of the artist to delete", required = true, example = "1")
-            @PathVariable Long id) {
-        artistService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
+
 
     @Operation(summary = "Search artists by name", description = "Searches for artists matching the provided name (partial or full) with pagination support.")
     @ApiResponses({

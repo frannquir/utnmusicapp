@@ -191,38 +191,4 @@ public class SongController {
         return ResponseEntity.ok(songPage);
     }
 
-    @Operation(
-            summary = "Delete a song by its ID",
-            description = "Marks a song as inactive using its internal unique identifier."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204",
-                    description = "Song deleted successfully",
-                    content = @Content
-            ),
-            @ApiResponse(responseCode = "404",
-                    description = "Song not found",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            ),
-            @ApiResponse(responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            )
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSongById(
-            @Parameter(description = "Internal song ID", example = "1")
-            @PathVariable Long id
-    ) {
-        songService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
 }

@@ -34,17 +34,6 @@ public class AlbumService  {
                 -> new EntityNotFoundException("Album with ID " + id + " not found.")));
     }
 
-    public AlbumEntity findByIdEntity(Long id) {
-        return albumRepository.findById(id).orElseThrow(()
-                -> new EntityNotFoundException("Album with ID " + id + " not found."));
-    }
-
-    public void deleteById(Long id) {
-        albumRepository.findById(id).orElseThrow(()->
-                new EntityNotFoundException("Album with ID " + id + " not found."));
-        albumRepository.deleteById(id);
-    }
-
     public AlbumResponse findBySpotifyId(String spotifyId){
         return albumMapper.toResponse(albumRepository.findBySpotifyId(spotifyId).orElseThrow(()
                 -> new EntityNotFoundException("Album with Spotify ID " + spotifyId + " not found.")));

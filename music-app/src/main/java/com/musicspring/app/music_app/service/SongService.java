@@ -31,12 +31,6 @@ public class SongService  {
                 .orElseThrow(() -> new EntityNotFoundException("Song with ID: " + id + " not found.")));
     }
 
-    public void deleteById(Long id) {
-        SongEntity songEntity = songRepository.findById(id)
-                        .orElseThrow(() -> new EntityNotFoundException("Song with ID: " + id + " not found."));
-        songRepository.deleteById(id);
-    }
-
     public SongResponse findBySpotifyId(String spotifyId) {
         return songMapper.toResponse(songRepository.findBySpotifyId(spotifyId)
                 .orElseThrow(() -> new EntityNotFoundException("Song with Spotify ID: " + spotifyId + " not found.")));

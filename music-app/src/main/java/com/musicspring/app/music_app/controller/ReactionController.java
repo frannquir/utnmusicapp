@@ -1,7 +1,6 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
-import com.musicspring.app.music_app.model.dto.request.ReactionRequest;
 import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
 import com.musicspring.app.music_app.model.enums.ReactedType;
 import com.musicspring.app.music_app.model.enums.ReactionType;
@@ -296,10 +295,13 @@ public class ReactionController {
     })
     @PostMapping("/reviews/{reviewId}/reactions")
     public ResponseEntity<ReactionResponse> createReactionToReview(
-            @RequestBody ReactionRequest request,
+            @Parameter(description = "Reaction type (e.g., LIKE, LOVE, etc.)", example = "LIKE", required = true)
+            @RequestParam ReactionType reactionType,
+            @Parameter(description = "Id of the user",example = "1", required = true)
+            @RequestParam Long userId,
             @PathVariable Long reviewId
     ) {
-        ReactionResponse response = reactionService.createReviewReaction(request, reviewId);
+        ReactionResponse response = reactionService.createReviewReaction(reactionType,userId, reviewId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -396,10 +398,13 @@ public class ReactionController {
     })
     @PostMapping("/comments/{commentId}/reactions")
     public ResponseEntity<ReactionResponse> createReactionToComment(
-            @RequestBody ReactionRequest request,
+            @Parameter(description = "Reaction type (e.g., LIKE, LOVE, etc.)", example = "LIKE", required = true)
+            @RequestParam ReactionType reactionType,
+            @Parameter(description = "Id of the user",example = "1", required = true)
+            @RequestParam Long userId,
             @PathVariable Long commentId
     ) {
-        ReactionResponse response = reactionService.createCommentReaction(request, commentId);
+        ReactionResponse response = reactionService.createCommentReaction(reactionType,userId,commentId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
