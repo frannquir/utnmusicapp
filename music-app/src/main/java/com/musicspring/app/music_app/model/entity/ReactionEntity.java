@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.musicspring.app.music_app.model.enums.ReactedType;
 import com.musicspring.app.music_app.model.enums.ReactionType;
 import jakarta.persistence.*;
@@ -33,6 +34,7 @@ public class ReactionEntity {
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     @ManyToOne
