@@ -109,11 +109,4 @@ public class CommentService {
         return commentMapper.toResponsePage(commentPage);
     }
 
-    public Page<CommentResponse> getCommentsByReviewIdAndType(Long reviewId, CommentType commentType, Pageable pageable) {
-        Page<CommentEntity> commentPage = commentRepository.findByReviewEntity_ReviewIdAndCommentType(reviewId, commentType, pageable);
-        return commentMapper.toResponsePage(commentPage);
-    }
-
-
-
 }
