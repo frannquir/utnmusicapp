@@ -108,10 +108,12 @@ public class ReactionController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Page.class))
             ),
-            @ApiResponse(responseCode = "404",
-                    description = "Review not found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class))
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid review ID",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
             ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
@@ -343,7 +345,7 @@ public class ReactionController {
 
     @Operation(
             summary = "Delete a reaction on a review",
-            description = "Permanently deletes the reaction associated with the specified review. If the reaction or review is not found, a 404 response is returned."
+            description = "Permanently deletes the reaction associated with the specified review."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204",
@@ -446,7 +448,7 @@ public class ReactionController {
 
     @Operation(
             summary = "Delete a reaction on a comment",
-            description = "Permanently deletes the reaction associated with the specified comment. If the reaction or comment is not found, a 404 response is returned."
+            description = "Permanently deletes the reaction associated with the specified comment."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204",

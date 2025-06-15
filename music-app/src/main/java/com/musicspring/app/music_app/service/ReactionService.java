@@ -127,8 +127,10 @@ public class ReactionService {
 
     @Transactional
     public void deleteReaction(Long reactionId) {
-        // Idempotent - doesn't fail if reaction doesn't exist
-        reactionRepository.deleteById(reactionId);
+        reactionRepository.findById(reactionId).ifPresent(reactionEntity -> {
+            AuthService.validateRequestUserOwnership(reactionEntity.getUser().getUserId());
+            reactionRepository.deleteById(reactionId);
+        });
     }
 
 }
