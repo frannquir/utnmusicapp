@@ -40,11 +40,23 @@ public class StatisticService {
         return songMapper.toResponsePage(songRepository.findTopReviewedSongs(pageable));
     }
 
+    public Page<SongResponse> getTopSongsByReactionType(ReactionType reactionType, Pageable pageable) {
+        return songMapper.toResponsePage(songRepository.findMostReactedSongs(reactionType, pageable));
+    }
+
     public Page<AlbumResponse> getMostReviewedAlbums(Pageable pageable) {
         return albumMapper.toResponsePage(albumRepository.findTopReviewedAlbums(pageable));
     }
 
+    public Page<AlbumResponse> getTopAlbumsByReactionType(ReactionType reactionType, Pageable pageable) {
+        return albumMapper.toResponsePage(albumRepository.findMostReactedAlbums(reactionType, pageable));
+    }
+
     public Page<ArtistResponse> getTopArtistsByReactionType(ReactionType reactionType, Pageable pageable) {
         return artistMapper.toResponsePage(artistRepository.findTopArtistsByReactionType(reactionType, pageable));
+    }
+
+    public Page<ArtistResponse> getMostReviewedArtists(Pageable pageable){
+        return artistMapper.toResponsePage(artistRepository.findMostReviewedArtists(pageable));
     }
 }

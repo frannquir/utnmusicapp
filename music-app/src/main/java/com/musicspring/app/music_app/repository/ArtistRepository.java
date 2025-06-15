@@ -30,4 +30,14 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
             "HAVING COUNT(r1) > 0 OR COUNT(r2) > 0 " +
             "ORDER BY COUNT(r1) + COUNT(r2) DESC")
     Page<ArtistEntity> findTopArtistsByReactionType(@Param("reactionType") ReactionType reactionType, Pageable pageable);
+
+    @Query("SELECT a " +
+            "FROM ArtistEntity a " +
+            "LEFT JOIN a.albums al " +
+            "LEFT JOIN al.songs s " +
+            "LEFT JOIN SongReviewEntity sr ON s.songId = sr.song.songId " +
+            "LEFT JOIN AlbumReviewEntity ar ON al.albumId = ar.album.albumId " +
+            "GROUP BY a " +
+            "ORDER BY (COUNT(sr.reviewId) + COUNT(ar.reviewId)) DESC")
+    Page<ArtistEntity> findMostReviewedArtists(Pageable pageable);
 }
