@@ -1,9 +1,9 @@
 package com.musicspring.app.music_app.model.mapper;
 
-import com.musicspring.app.music_app.model.dto.request.ReactionRequest;
 import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.enums.ReactedType;
+import com.musicspring.app.music_app.model.enums.ReactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -36,18 +36,18 @@ public class ReactionMapper {
                 .collect(Collectors.toList());
     }
 
-    public ReactionEntity toEntity(ReactionRequest request, UserEntity user, CommentEntity comment){
+    public ReactionEntity toEntity(ReactionType reactionType, UserEntity user, CommentEntity comment){
         return ReactionEntity.builder()
-                .reactionType(request.getReactionType())
+                .reactionType(reactionType)
                 .reactedType(ReactedType.COMMENT) // fijamos el tipo explícitamente
                 .user(user)
                 .comment(comment)
                 .build();
     }
 
-    public ReactionEntity toEntity(ReactionRequest request, UserEntity user, ReviewEntity review){
+    public ReactionEntity toEntity(ReactionType reactionType, UserEntity user, ReviewEntity review){
         return ReactionEntity.builder()
-                .reactionType(request.getReactionType())
+                .reactionType(reactionType)
                 .reactedType(ReactedType.REVIEW) // fijamos el tipo explícitamente
                 .user(user)
                 .review(review)

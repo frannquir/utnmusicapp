@@ -23,12 +23,6 @@ public class ArtistService {
         this.artistMapper = artistMapper;
     }
 
-    public void deleteById(Long id) {
-        artistRepository.findById(id)
-                .orElseThrow(()-> new EntityNotFoundException("Artist with ID " + id + " not found."));
-        artistRepository.deleteById(id);
-    }
-
     public Page<ArtistResponse> findAll(Pageable pageable) {
         return artistMapper.toResponsePage(artistRepository.findAll(pageable));
     }

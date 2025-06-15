@@ -129,33 +129,5 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.searchAlbums(query, pageable));
     }
 
-    @Operation(summary = "Delete an album by its ID",
-            description = "Deletes the album corresponding to the provided ID. If the album does not exist, a 404 response is returned.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204",
-                    description = "Album deleted successfully. No content is returned."),
-            @ApiResponse(responseCode = "404",
-                    description = "Album not found.",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )),
-            @ApiResponse(responseCode = "500",
-                    description = "Internal server error.",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            )
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAlbum(
-            @Parameter(description = "ID of the album to delete", required = true, example = "1")
-            @PathVariable Long id
-    ) {
-        albumService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
 }
 
