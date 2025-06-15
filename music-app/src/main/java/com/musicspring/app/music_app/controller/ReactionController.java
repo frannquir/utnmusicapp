@@ -305,10 +305,9 @@ public class ReactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
     @Operation(
-            summary = "Update a reaction on a review",
-            description = "Updates the type of an existing reaction identified by its ID for a specific review."
+            summary = "Update a reaction",
+            description = "Updates the type of an existing reaction identified by its ID."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -320,7 +319,11 @@ public class ReactionController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
             ),
             @ApiResponse(responseCode = "404",
-                    description = "Reaction or review not found",
+                    description = "Reaction not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "403",
+                    description = "User not authorized to update this reaction",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
             ),
             @ApiResponse(responseCode = "500",
@@ -328,13 +331,9 @@ public class ReactionController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
             )
     })
-    @PatchMapping("/reviews/{reviewId}/reactions/{reactionId}")
-    public ResponseEntity<ReactionResponse> updateReactionToReview(
-            @Parameter(description = "Review ID", example = "10", required = true)
-            @PathVariable Long reviewId,
-            @Parameter(description = "Reaction ID", example = "1", required = true)
+    @PatchMapping("/reactions/{reactionId}")
+    public ResponseEntity<ReactionResponse> updateReaction(
             @PathVariable Long reactionId,
-            @Parameter(description = "New reaction type", example = "LOVE", required = true)
             @RequestParam ReactionType newReactionType) {
 
         ReactionResponse response = reactionService.updateReaction(reactionId, newReactionType);
@@ -405,41 +404,6 @@ public class ReactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
-    @Operation(
-            summary = "Update a reaction on a comment",
-            description = "Updates the type of an existing reaction identified by its ID for a specific comment."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200",
-                    description = "Reaction updated successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReactionResponse.class))
-            ),
-            @ApiResponse(responseCode = "400",
-                    description = "Invalid reaction type provided",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
-            ),
-            @ApiResponse(responseCode = "404",
-                    description = "Reaction or comment not found",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
-            ),
-            @ApiResponse(responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
-            )
-    })
-    @PatchMapping("/comments/{commentId}/reactions/{reactionId}")
-    public ResponseEntity<ReactionResponse> updateReactionToComment(
-            @Parameter(description = "Comment ID", example = "15", required = true)
-            @PathVariable Long commentId,
-            @Parameter(description = "Reaction ID", example = "1", required = true)
-            @PathVariable Long reactionId,
-            @Parameter(description = "New reaction type", example = "LOVE", required = true)
-            @RequestParam ReactionType newReactionType) {
-
-        ReactionResponse response = reactionService.updateReaction(reactionId, newReactionType);
-        return ResponseEntity.ok(response);
-    }
 
     @Operation(
             summary = "Delete a reaction on a comment",

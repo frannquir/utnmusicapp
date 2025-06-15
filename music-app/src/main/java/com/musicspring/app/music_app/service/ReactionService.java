@@ -111,8 +111,6 @@ public class ReactionService {
         return reactionMapper.toResponse(reaction);
     }
 
-
-
     @Transactional
     public ReactionResponse updateReaction(Long reactionId, ReactionType newReactionType) {
 
