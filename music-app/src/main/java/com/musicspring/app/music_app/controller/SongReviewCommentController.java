@@ -36,7 +36,7 @@ public class SongReviewCommentController {
     }
 
     @Operation(
-            summary = "Create a new comment for a song or album review",
+            summary = "Create a new comment for a song review",
             description = "Adds a new comment associated with the specified song or album review."
     )
     @ApiResponses(value = {
