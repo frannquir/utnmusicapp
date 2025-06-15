@@ -248,27 +248,4 @@ public class SongReviewCommentController {
         return ResponseEntity.ok(comments);
     }
 
-    @Operation(
-            summary = "Retrieve comments by review ID and comment type",
-            description = "Fetches a paginated list of comments filtered by review ID and comment type."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comments retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
-    })
-    @GetMapping("/filter")
-    public ResponseEntity<Page<CommentResponse>> getCommentsByReviewIdAndType(
-            @Parameter(description = "ID of the song review", example = "1")
-            @PathVariable Long reviewId,
-            @Parameter(description = "Type of the comment", example = "SONG_REVIEW")
-            @RequestParam CommentType commentType,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "createdAt") String sort) {
-
-        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
-        Page<CommentResponse> comments = commentService.getCommentsByReviewIdAndType(reviewId, commentType, pageable);
-        return ResponseEntity.ok(comments);
-    }
-
 }
