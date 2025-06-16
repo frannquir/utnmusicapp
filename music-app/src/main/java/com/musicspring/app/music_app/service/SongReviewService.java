@@ -1,8 +1,6 @@
 package com.musicspring.app.music_app.service;
 
-import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
-import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
-import com.musicspring.app.music_app.model.dto.request.SongReviewRequest;
+import com.musicspring.app.music_app.model.dto.request.*;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
@@ -12,7 +10,6 @@ import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.model.mapper.SongMapper;
 import com.musicspring.app.music_app.security.service.AuthService;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
-import com.musicspring.app.music_app.model.dto.request.SongRequest;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -162,5 +159,18 @@ public class SongReviewService {
     public Page<SongReviewResponse> findByUserId(Long userId, Pageable pageable){
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found."));
         return songReviewMapper.toResponsePage(songReviewRepository.findByUser_UserId(userId, pageable));
+    }
+
+    public SongReviewResponse updateSongReviewContent(Long songReviewId, ReviewPatchRequest patchRequest) {
+        SongReviewEntity songReviewEntity = songReviewRepository.findById(songReviewId)
+                .orElseThrow(() -> new EntityNotFoundException("Song review with ID: " + songReviewId + " not found."));
+
+        AuthService.validateRequestUserOwnership(songReviewEntity.getUser().getUserId());
+
+        songReviewEntity.setDescription(patchRequest.getDescription());
+
+        SongReviewEntity updated = songReviewRepository.save(songReviewEntity);
+
+        return songReviewMapper.toResponse(updated);
     }
 }
