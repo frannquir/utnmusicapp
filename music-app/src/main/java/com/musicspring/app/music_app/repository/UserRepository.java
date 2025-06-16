@@ -38,4 +38,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.active = true")
     Optional<UserEntity> findById(@Param("userId") Long userId);
 
+    @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.active = false")
+    Optional<UserEntity> findByIdAndActiveFalse(@Param("userId") Long userId);
+
 }

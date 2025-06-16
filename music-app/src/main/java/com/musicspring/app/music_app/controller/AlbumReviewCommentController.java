@@ -48,6 +48,13 @@ public class AlbumReviewCommentController {
                             schema = @Schema(implementation = Page.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Review not found",
@@ -110,6 +117,13 @@ public class AlbumReviewCommentController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Review or User not found",
@@ -157,6 +171,13 @@ public class AlbumReviewCommentController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Access denied - user does not own the comment",
@@ -195,10 +216,23 @@ public class AlbumReviewCommentController {
             description = "Retrieve a comment by its ID."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Comment retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CommentResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Comment not found",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+            @ApiResponse(responseCode = "200",
+                    description = "Comment retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CommentResponse.class))),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "Comment not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)))
     })
     @GetMapping("/{commentId}")
     public ResponseEntity<CommentResponse> getCommentById(
@@ -215,6 +249,13 @@ public class AlbumReviewCommentController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Comment deleted successfully"),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404", description = "Comment not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
@@ -233,7 +274,14 @@ public class AlbumReviewCommentController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Comments retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
     })
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<CommentResponse>> getCommentsByUserId(

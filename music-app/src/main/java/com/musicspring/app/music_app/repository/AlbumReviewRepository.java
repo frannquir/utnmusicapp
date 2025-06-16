@@ -25,6 +25,9 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,L
     @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = true")
     Page<AlbumReviewEntity> findByUser_UserId(Long userId,Pageable pageable);
 
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = false")
+    Page<AlbumReviewEntity> findByUser_UserIdAndActiveFalse(Long userId,Pageable pageable);
+
     @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.album.spotifyId = :spotifyId AND ar.active = true")
     Page<AlbumReviewEntity> findByAlbum_SpotifyId(@Param("spotifyId") String spotifyId, Pageable pageable);
 

@@ -24,7 +24,10 @@ public interface SongReviewRepository extends JpaRepository<SongReviewEntity,Lon
 
     @Query("SELECT sr FROM SongReviewEntity sr WHERE sr.user.userId = :userId AND sr.active = true")
     Page<SongReviewEntity> findByUser_UserId(@Param("userId") Long userId, Pageable pageable);
-    
+
+    @Query("SELECT sr FROM SongReviewEntity sr WHERE sr.user.userId = :userId AND sr.active = false")
+    Page<SongReviewEntity> findByUser_UserIdAndActiveFalse(@Param("userId") Long userId, Pageable pageable);
+
     @Query("SELECT sr FROM SongReviewEntity sr WHERE sr.song.spotifyId = :spotifyId AND sr.active = true")
     Page<SongReviewEntity> findBySong_SpotifyId(@Param("spotifyId") String spotifyId, Pageable pageable);
 
