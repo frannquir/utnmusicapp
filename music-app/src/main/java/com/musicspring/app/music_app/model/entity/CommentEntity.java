@@ -44,4 +44,7 @@ public class CommentEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "comment_type", nullable = false)
     private CommentType commentType;
+
+    @Column(name = "active", nullable = false)
+    private Boolean active;
 }

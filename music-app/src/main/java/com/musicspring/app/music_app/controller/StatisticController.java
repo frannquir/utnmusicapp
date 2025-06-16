@@ -58,6 +58,13 @@ public class StatisticController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal server error",
@@ -88,6 +95,13 @@ public class StatisticController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input or request parameters",
                     content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json"))
     })
@@ -124,6 +138,13 @@ public class StatisticController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal server error",
@@ -155,6 +176,13 @@ public class StatisticController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input or request parameters",
                     content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json"))
     })
@@ -180,6 +208,13 @@ public class StatisticController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input or request parameters",
                     content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json"))
     })
@@ -206,6 +241,13 @@ public class StatisticController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input or request parameters",
                     content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json"))
     })

@@ -48,6 +48,13 @@ public class ReactionController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class))
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(mediaType = "application/json",
@@ -80,6 +87,13 @@ public class ReactionController {
                     description = "Reaction retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReactionResponse.class))
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Reaction not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
@@ -110,6 +124,13 @@ public class ReactionController {
             ),
             @ApiResponse(responseCode = "400",
                     description = "Invalid review ID",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -156,6 +177,13 @@ public class ReactionController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(
@@ -195,6 +223,13 @@ public class ReactionController {
             ),
             @ApiResponse(responseCode = "400",
                     description = "Invalid parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -245,6 +280,13 @@ public class ReactionController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(
@@ -274,6 +316,12 @@ public class ReactionController {
             description = "Creates a new reaction associated to the specified review."
     )
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Reaction created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ReactionResponse.class))
+            ),
             @ApiResponse(responseCode = "200",
                     description = "Reaction processed successfully",
                     content = @Content(mediaType = "application/json",
@@ -283,6 +331,13 @@ public class ReactionController {
                     description = "Invalid reaction data",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
             ),
             @ApiResponse(responseCode = "404",
                     description = "Review not found",
@@ -320,6 +375,13 @@ public class ReactionController {
                     description = "Invalid reaction type provided",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Reaction not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
@@ -350,6 +412,17 @@ public class ReactionController {
             @ApiResponse(responseCode = "204",
                     description = "Reaction deleted successfully. No content is returned."
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "403",
+                    description = "Access denied: insufficient privileges to delete this reaction.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Reaction or review not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
@@ -376,6 +449,12 @@ public class ReactionController {
             description = "Creates a new reaction associated to the specified comment."
     )
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Reaction created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ReactionResponse.class))
+            ),
             @ApiResponse(responseCode = "200",
                     description = "Reaction processed successfully",
                     content = @Content(mediaType = "application/json",
@@ -385,6 +464,13 @@ public class ReactionController {
                     description = "Invalid reaction data",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
             ),
             @ApiResponse(responseCode = "404",
                     description = "Comment not found",
@@ -417,6 +503,17 @@ public class ReactionController {
     @ApiResponses({
             @ApiResponse(responseCode = "204",
                     description = "Reaction deleted successfully. No content is returned."
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "403",
+                    description = "Access denied: insufficient privileges to delete this reaction.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
             ),
             @ApiResponse(responseCode = "404",
                     description = "Reaction or comment not found",

@@ -44,6 +44,13 @@ public class UserController {
                             schema = @Schema(implementation = List.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(
@@ -67,6 +74,13 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
             @ApiResponse(responseCode = "404",
@@ -103,6 +117,13 @@ public class UserController {
                             schema = @Schema(implementation = UserResponse.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "User not found",
                     content = @Content(
@@ -133,6 +154,13 @@ public class UserController {
             @ApiResponse(responseCode = "204",
                     description = "User deleted successfully",
                     content = @Content
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
             ),
             @ApiResponse(responseCode = "404",
                     description = "User not found",
@@ -170,6 +198,13 @@ public class UserController {
                             schema = @Schema(implementation = Page.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(
@@ -185,6 +220,45 @@ public class UserController {
             @Parameter(hidden = true)
             Pageable pageable) {
         return ResponseEntity.ok(userService.searchUsers(query, pageable));
+    }
+
+    @Operation(
+            summary = "Reactivate a user by ID",
+            description = "Logically reactivates a user by setting their active status to true, including their reviews and comments."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204",
+                    description = "User reactivated successfully",
+                    content = @Content
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @PutMapping("/{id}/reactivate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivateUser(
+            @Parameter(description = "Internal user ID", example = "1")
+            @PathVariable Long id) {
+        userService.reactivateUser(id);
     }
 
 }

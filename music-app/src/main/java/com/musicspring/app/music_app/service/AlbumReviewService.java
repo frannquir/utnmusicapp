@@ -63,11 +63,13 @@ public class AlbumReviewService {
 
     @Transactional
     public void deleteById(Long id) {
-        AlbumReviewEntity albumReviewEntity = albumReviewRepository.findById(id)
+        AlbumReviewEntity albumReview = albumReviewRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found."));
-        albumReviewEntity.setActive(false);
-        albumReviewRepository.save(albumReviewEntity);
+        AuthService.validateRequestUserOwnership(albumReview.getUser().getUserId());
+        albumReview.setActive(false);
+        albumReviewRepository.save(albumReview);
     }
+
     @Transactional
     public AlbumReviewResponse createAlbumReview(Long albumId, String spotifyId,
                                                  AlbumReviewRequest albumReviewRequest) {

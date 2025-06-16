@@ -49,6 +49,13 @@ public class SongController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Entity not found",
                     content = @Content(
@@ -92,6 +99,13 @@ public class SongController {
                             schema = @Schema(implementation = SongResponse.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Song not found",
                     content = @Content(
@@ -127,6 +141,13 @@ public class SongController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = SongResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
             @ApiResponse(responseCode = "404",
@@ -167,6 +188,13 @@ public class SongController {
             ),
             @ApiResponse(responseCode = "400",
                     description = "Invalid search parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)

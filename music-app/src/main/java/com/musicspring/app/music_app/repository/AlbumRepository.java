@@ -19,7 +19,7 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
 
     @Query("SELECT a " +
             "FROM AlbumEntity a " +
-            "LEFT JOIN AlbumReviewEntity r ON a.albumId = r.album.albumId " +
+            "LEFT JOIN AlbumReviewEntity r ON a.albumId = r.album.albumId AND r.active = true " +
             "GROUP BY a " +
             "HAVING COUNT(r) > 0 " +
             "ORDER BY COUNT(r) DESC")
@@ -27,7 +27,7 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
 
     @Query("SELECT al " +
             "FROM AlbumEntity al " +
-            "LEFT JOIN AlbumReviewEntity ar ON ar.album.albumId = al.albumId " +
+            "LEFT JOIN AlbumReviewEntity ar ON ar.album.albumId = al.albumId AND ar.active = true " +
             "LEFT JOIN ReactionEntity r ON ar.reviewId = r.review.reviewId " +
             "WHERE r.reactionType = :reactionType " +
             "GROUP BY al " +

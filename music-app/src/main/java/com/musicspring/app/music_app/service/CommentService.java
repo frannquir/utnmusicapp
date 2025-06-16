@@ -21,16 +21,22 @@ public class CommentService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final CommentMapper commentMapper;
+    private final AlbumReviewRepository albumReviewRepository;
+    private final SongReviewRepository songReviewRepository;
 
     @Autowired
     public CommentService(CommentRepository commentRepository,
                           UserRepository userRepository,
                           ReviewRepository reviewRepository,
-                          CommentMapper commentMapper) {
+                          CommentMapper commentMapper,
+                          AlbumReviewRepository albumReviewRepository,
+                          SongReviewRepository songReviewRepository) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.commentMapper = commentMapper;
+        this.albumReviewRepository = albumReviewRepository;
+        this.songReviewRepository = songReviewRepository;
     }
 
     public Page<CommentResponse> findAll(Pageable pageable){
@@ -49,7 +55,8 @@ public class CommentService {
 
         AuthService.validateRequestUserOwnership(commentEntity.getUser().getUserId());
 
-        commentRepository.delete(commentEntity);
+        commentEntity.setActive(false);
+        commentRepository.save(commentEntity);
     }
 
     @Transactional
@@ -67,6 +74,7 @@ public class CommentService {
         }
 
         CommentEntity comment = commentMapper.toEntity(commentRequest, user, review, CommentType.SONG_REVIEW);
+        comment.setActive(true);
         commentRepository.save(comment);
 
         return commentMapper.toResponse(comment);
@@ -87,6 +95,7 @@ public class CommentService {
         }
 
         CommentEntity comment = commentMapper.toEntity(commentRequest, user, review, CommentType.ALBUM_REVIEW);
+        comment.setActive(true);
         commentRepository.save(comment);
 
         return commentMapper.toResponse(comment);
@@ -111,6 +120,9 @@ public class CommentService {
     }
 
     public Page<CommentResponse> getCommentsByReviewId(Long reviewId, Pageable pageable) {
+        if(albumReviewRepository.findById(reviewId).isEmpty() && songReviewRepository.findById(reviewId).isEmpty()){
+            throw new EntityNotFoundException("Review with ID: " + reviewId + " not found.");
+        }
         Page<CommentEntity> commentPage = commentRepository.findByReviewEntity_ReviewId(reviewId, pageable);
         return commentMapper.toResponsePage(commentPage);
     }
