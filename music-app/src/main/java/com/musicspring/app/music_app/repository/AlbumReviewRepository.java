@@ -4,6 +4,7 @@ import com.musicspring.app.music_app.model.entity.AlbumReviewEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -32,6 +33,14 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,L
     Page<AlbumReviewEntity> findByAlbum_SpotifyId(@Param("spotifyId") String spotifyId, Pageable pageable);
 
     long countByUser_UserId(Long userId);
+
+    @Modifying
+    @Query("UPDATE AlbumReviewEntity ar SET ar.active = false WHERE ar.user.userId = :userId")
+    void deactivateByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE AlbumReviewEntity ar SET ar.active = true WHERE ar.user.userId = :userId AND ar.active = false")
+    void reactivateByUserId(@Param("userId") Long userId);
 
 
 }

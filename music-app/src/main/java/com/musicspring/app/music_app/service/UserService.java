@@ -85,64 +85,29 @@ public class UserService {
     public void deleteUser(Long id) {
         UserEntity user = userRepository.findById(id).orElseThrow(()
                 -> new EntityNotFoundException("User with ID: " + id + " was not found."));
-        deleteReviewsAndComments(user);
+
+        commentRepository.deactivateCommentsOnUserReviews(id);
+        albumReviewRepository.deactivateByUserId(id);
+        songReviewRepository.deactivateByUserId(id);
+        commentRepository.deactivateByUserId(id);
+        reactionRepository.deleteByUserId(id);
+
         user.setActive(false);
         userRepository.save(user);
-//        userRepository.deleteById(id);
-    }
-
-    private void deleteReviewsAndComments(UserEntity user){
-        List<AlbumReviewEntity> reviews = albumReviewRepository
-                .findByUser_UserId(user.getUserId(), Pageable.unpaged())
-                .getContent();
-        reviews.stream().forEach(review -> review.setActive(false));
-        albumReviewRepository.saveAll(reviews);
-
-        List<SongReviewEntity> songReviews = songReviewRepository
-                .findByUser_UserId(user.getUserId(), Pageable.unpaged())
-                .getContent();
-        songReviews.stream().forEach(review -> review.setActive(false));
-        songReviewRepository.saveAll(songReviews);
-
-        List<CommentEntity> comments = commentRepository
-                .findByUser_UserId(user.getUserId(), Pageable.unpaged())
-                .getContent();
-        comments.stream().forEach(comment -> comment.setActive(false));
-        commentRepository.saveAll(comments);
-
-        List<ReactionEntity> reactions = reactionRepository
-                .findByUser_UserId(user.getUserId(),Pageable.unpaged())
-                .getContent();
-        reactionRepository.deleteAll(reactions);
     }
 
     @Transactional
     public void reactivateUser(Long id) {
         UserEntity user = userRepository.findByIdAndActiveFalse(id).orElseThrow(()
                 -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+
         user.setActive(true);
         userRepository.save(user);
-        reactivateReviewsAndComments(user);
-    }
 
-    private void reactivateReviewsAndComments(UserEntity user){
-        List<AlbumReviewEntity> reviews = albumReviewRepository
-                .findByUser_UserIdAndActiveFalse(user.getUserId(), Pageable.unpaged())
-                .getContent();
-        reviews.stream().forEach(review -> review.setActive(true));
-        albumReviewRepository.saveAll(reviews);
-
-        List<SongReviewEntity> songReviews = songReviewRepository
-                .findByUser_UserIdAndActiveFalse(user.getUserId(), Pageable.unpaged())
-                .getContent();
-        songReviews.stream().forEach(review -> review.setActive(true));
-        songReviewRepository.saveAll(songReviews);
-
-        List<CommentEntity> comments = commentRepository
-                .findByUser_UserIdAndActiveFalse(user.getUserId(), Pageable.unpaged())
-                .getContent();
-        comments.stream().forEach(comment -> comment.setActive(true));
-        commentRepository.saveAll(comments);
+        albumReviewRepository.reactivateByUserId(id);
+        songReviewRepository.reactivateByUserId(id);
+        commentRepository.reactivateByUserId(id);
+        commentRepository.reactivateCommentsOnUserReviews(id);
     }
 
     public Page<UserResponse> searchUsers(String query, Pageable pageable) {

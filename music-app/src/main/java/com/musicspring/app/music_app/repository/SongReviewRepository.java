@@ -4,6 +4,7 @@ import com.musicspring.app.music_app.model.entity.SongReviewEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -32,4 +33,13 @@ public interface SongReviewRepository extends JpaRepository<SongReviewEntity,Lon
     Page<SongReviewEntity> findBySong_SpotifyId(@Param("spotifyId") String spotifyId, Pageable pageable);
 
     long countByUser_UserId(Long userId);
+
+
+    @Modifying
+    @Query("UPDATE SongReviewEntity sr SET sr.active = false WHERE sr.user.userId = :userId")
+    void deactivateByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE SongReviewEntity sr SET sr.active = true WHERE sr.user.userId = :userId AND sr.active = false")
+    void reactivateByUserId(@Param("userId") Long userId);
 }

@@ -9,6 +9,7 @@ import com.musicspring.app.music_app.model.enums.ReactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -40,4 +41,8 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
 
     Optional<ReactionEntity> findByUserAndReview(UserEntity user, ReviewEntity review);
     Optional<ReactionEntity> findByUserAndComment(UserEntity user, CommentEntity comment);
+
+    @Modifying
+    @Query("DELETE FROM ReactionEntity r WHERE r.user.userId = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

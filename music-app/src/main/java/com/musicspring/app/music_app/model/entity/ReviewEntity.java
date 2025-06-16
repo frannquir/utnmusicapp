@@ -26,7 +26,7 @@ public abstract class ReviewEntity {
     @Column(name = "review_id")
     private Long reviewId;
 
-    @Column(name = "rating", columnDefinition = "DECIMAL(3,2) DEFAULT 5.0")
+    @Column(name = "rating", columnDefinition = "DECIMAL(3,2)")
     private Double rating;
 
     @Column(name = "description",length = 500)
