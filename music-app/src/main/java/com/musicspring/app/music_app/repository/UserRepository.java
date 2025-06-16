@@ -8,15 +8,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    Optional<UserEntity> findByUsername(String username);
+    @Query("SELECT u FROM UserEntity u WHERE u.username = :username AND u.active = true")
+    Optional<UserEntity> findByUsername(@Param("username") String username);
     Boolean existsByUsername(String username);
     // for username updates
     Boolean existsByUsernameAndUserIdNot(String username, Long userId);
-    Page<UserEntity> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
+
+    @Query("SELECT u FROM UserEntity u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%')) AND u.active = true")
+    Page<UserEntity> findByUsernameContainingIgnoreCase(@Param("username") String username, Pageable pageable);
 
     // jpql avg rating, better performance.
     @Query(value = """
@@ -27,4 +31,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     ) all_reviews
     """, nativeQuery = true)
     Double calculateUserAverageRating(@Param("userId") Long userId);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.active = true")
+    List<UserEntity> findAll();
+
+    @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.active = true")
+    Optional<UserEntity> findById(@Param("userId") Long userId);
+
 }

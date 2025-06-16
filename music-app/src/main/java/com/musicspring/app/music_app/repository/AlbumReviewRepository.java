@@ -8,16 +8,24 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,Long> {
 
-    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.album.albumId = :albumId")
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.active = true")
+    Page<AlbumReviewEntity> findAll(Pageable pageable);
+
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.reviewId = :reviewId AND ar.active = true")
+    Optional<AlbumReviewEntity> findById(@Param("reviewId") Long reviewId);
+
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.album.albumId = :albumId AND ar.active = true")
     Page<AlbumReviewEntity> findByAlbum_AlbumId(Long albumId, Pageable pageable);
 
-    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId")
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = true")
     Page<AlbumReviewEntity> findByUser_UserId(Long userId,Pageable pageable);
 
-    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.album.spotifyId = :spotifyId")
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.album.spotifyId = :spotifyId AND ar.active = true")
     Page<AlbumReviewEntity> findByAlbum_SpotifyId(@Param("spotifyId") String spotifyId, Pageable pageable);
 
     long countByUser_UserId(Long userId);

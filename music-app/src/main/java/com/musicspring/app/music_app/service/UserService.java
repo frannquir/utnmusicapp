@@ -2,17 +2,13 @@ package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.dto.request.*;
-import com.musicspring.app.music_app.model.entity.AlbumReviewEntity;
+import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
-import com.musicspring.app.music_app.repository.AlbumReviewRepository;
-import com.musicspring.app.music_app.model.entity.SongReviewEntity;
+import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.model.mapper.SongReviewMapper;
-import com.musicspring.app.music_app.repository.SongReviewRepository;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
-import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
-import com.musicspring.app.music_app.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,6 +32,8 @@ public class UserService {
     private final AlbumReviewMapper albumReviewMapper;
     private final SongReviewRepository songReviewRepository;
     private final SongReviewMapper songReviewMapper;
+    private final CommentRepository commentRepository;
+    private final ReactionRepository reactionRepository;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -45,7 +43,7 @@ public class UserService {
                        AlbumReviewRepository albumReviewRepository,
                        SongReviewRepository songReviewRepository,
                        AlbumReviewMapper albumReviewMapper,
-                       SongReviewMapper songReviewMapper) {
+                       SongReviewMapper songReviewMapper, CommentRepository commentRepository, ReactionRepository reactionRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.credentialRepository = credentialRepository;
@@ -54,6 +52,8 @@ public class UserService {
         this.albumReviewMapper = albumReviewMapper;
         this.songReviewMapper = songReviewMapper;
         this.songReviewRepository = songReviewRepository;
+        this.commentRepository = commentRepository;
+        this.reactionRepository = reactionRepository;
     }
 
 
@@ -82,7 +82,37 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        UserEntity user = userRepository.findById(id).orElseThrow(()
+                -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+        deleteReviewsAndComments(user);
+        user.setActive(false);
+        userRepository.save(user);
+//        userRepository.deleteById(id);
+    }
+
+    private void deleteReviewsAndComments(UserEntity user){
+        List<AlbumReviewEntity> reviews = albumReviewRepository
+                .findByUser_UserId(user.getUserId(), Pageable.unpaged())
+                .getContent();
+        reviews.stream().forEach(review -> review.setActive(false));
+        albumReviewRepository.saveAll(reviews);
+
+        List<SongReviewEntity> songReviews = songReviewRepository
+                .findByUser_UserId(user.getUserId(), Pageable.unpaged())
+                .getContent();
+        songReviews.stream().forEach(review -> review.setActive(false));
+        songReviewRepository.saveAll(songReviews);
+
+        List<CommentEntity> comments = commentRepository
+                .findByUser_UserId(user.getUserId(), Pageable.unpaged())
+                .getContent();
+        comments.stream().forEach(comment -> comment.setActive(false));
+        commentRepository.saveAll(comments);
+
+        List<ReactionEntity> reactions = reactionRepository
+                .findByUser_UserId(user.getUserId(),Pageable.unpaged())
+                .getContent();
+        reactionRepository.deleteAll(reactions);
     }
 
     public Page<UserResponse> searchUsers(String query, Pageable pageable) {
