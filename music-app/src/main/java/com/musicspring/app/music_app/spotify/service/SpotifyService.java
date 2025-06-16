@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.spotify.service;
 
+import com.musicspring.app.music_app.exception.SpotifyServiceException;
 import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
 import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
 import com.musicspring.app.music_app.model.dto.request.SongRequest;
@@ -65,7 +66,7 @@ public class SpotifyService {
             return new PageImpl<>(albumRequests, pageable, results.getTotal());
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException("Error searching albums: " + e.getMessage(), e);
+            throw new SpotifyServiceException("Error searching albums", e);
         }
     }
 
@@ -89,7 +90,7 @@ public class SpotifyService {
             return new PageImpl<>(artistRequests, pageable, results.getTotal());
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException("Error while searching artists: " + e.getMessage(), e);
+            throw new SpotifyServiceException("Error searching artists", e);
         }
     }
 
@@ -113,7 +114,7 @@ public class SpotifyService {
             return new PageImpl<>(songRequests, pageable, results.getTotal());
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException("Error while searching songs: " + e.getMessage(), e);
+            throw new SpotifyServiceException("Error searching songs", e);
         }
     }
 
@@ -129,7 +130,7 @@ public class SpotifyService {
             return spotifyMapper.toAlbumRequest(spotifyAlbum);
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException("Error while obtaining album: " + e.getMessage(), e);
+            throw new SpotifyServiceException("Error obtaining album", e);
         }
     }
 
@@ -143,7 +144,7 @@ public class SpotifyService {
             return spotifyMapper.toArtistRequest(spotifyArtist);
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException("Error while obtaining artist: " + e.getMessage(), e);
+            throw new SpotifyServiceException("Error obtaining artist", e);
         }
     }
 
@@ -157,7 +158,7 @@ public class SpotifyService {
             return spotifyMapper.toSongRequest(spotifyTrack);
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
-            throw new RuntimeException("Error while obtaining song: " + e.getMessage(), e);
+            throw new SpotifyServiceException("Error obtaining song", e);
         }
     }
 
