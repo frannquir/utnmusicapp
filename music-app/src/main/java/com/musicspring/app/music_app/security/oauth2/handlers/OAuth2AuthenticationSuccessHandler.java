@@ -127,7 +127,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     /**
      * Finds an existing OAuth2 user or creates a new one.
      * This method implements the "find or create" pattern for OAuth2 users.
-     * It first attempts to locate an existing credential by email address.
+     * It first attempts to locate an existing credential by email address (case-insensitive).
      * If no existing credential is found, it creates a new user account.
      *
      * @param email User's email address from OAuth2 provider (required for identification)
@@ -135,10 +135,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
      * @return CredentialEntity representing the user's authentication credentials
      */
     private CredentialEntity findOrCreateOAuth2User(String email, String name) {
-        Optional<CredentialEntity> existingCredential = credentialRepository.findByEmail(email);
+        // Normalize email to lowercase to handle case sensitivity issues
+        String normalizedEmail = email.toLowerCase().trim();
+        
+        Optional<CredentialEntity> existingCredential = credentialRepository.findByEmail(normalizedEmail);
 
         if (existingCredential.isPresent()) {
             CredentialEntity credential = existingCredential.get();
+
+            // Update provider if the user was created locally but now logging in via OAuth2
+            if (credential.getProvider() == AuthProvider.LOCAL) {
+                credential.setProvider(AuthProvider.GOOGLE);
+            }
 
             if (credential.getRefreshToken() == null) {
                 String refreshToken = jwtService.generateRefreshToken(credential);
@@ -148,7 +156,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
             return credential;
         } else {
-            return createOAuth2User(email, name);
+            return createOAuth2User(normalizedEmail, name);
         }
     }
 
@@ -165,10 +173,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
      * @return CredentialEntity for the newly created user
      */
     private CredentialEntity createOAuth2User(String email, String name) {
+        // Generate a unique username to avoid conflicts
+        String baseUsername = name != null ? name : email.split("@")[0];
+        String uniqueUsername = generateUniqueUsername(baseUsername);
+        
         // Create the main user entity with basic information
         UserEntity user = UserEntity.builder()
-                .username(name != null ? name : email.split("@")[0])  // Use name or email prefix as username
-                .active(true)                                         // New OAuth2 users are active by default
+                .username(uniqueUsername)        // Use unique username to avoid conflicts
+                .active(true)                    // New OAuth2 users are active by default
                 .build();
 
         // Save user entity to database to generate ID
@@ -204,5 +216,25 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .ifPresent(roles::add);
 
         return roles;
+    }
+
+    /**
+     * Generates a unique username by appending numbers to the base username if conflicts exist.
+     * This method prevents constraint violations when creating new users with OAuth2.
+     * 
+     * @param baseUsername The desired username
+     * @return A unique username that doesn't exist in the database
+     */
+    private String generateUniqueUsername(String baseUsername) {
+        String username = baseUsername;
+        int counter = 1;
+        
+        // Keep trying until we find a username that doesn't exist
+        while (userRepository.findByUsername(username).isPresent()) {
+            username = baseUsername + counter;
+            counter++;
+        }
+        
+        return username;
     }
 }
