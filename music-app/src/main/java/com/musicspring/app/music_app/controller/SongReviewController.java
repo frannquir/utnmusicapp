@@ -1,7 +1,9 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
+import com.musicspring.app.music_app.model.dto.request.ReviewPatchRequest;
 import com.musicspring.app.music_app.model.dto.request.SongReviewRequest;
+import com.musicspring.app.music_app.model.dto.response.CommentResponse;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
 import com.musicspring.app.music_app.service.SongReviewService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -282,5 +284,59 @@ public class SongReviewController {
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         Page<SongReviewResponse> songReviewResponsePage = songReviewService.findBySong(songId, spotifyId, pageable);
         return ResponseEntity.ok(songReviewResponsePage);
+    }
+
+    @Operation(
+            summary = "Update the content of an existing song review",
+            description = "Modifies the content of a song review identified by its ID. Only the owner of the review can perform this action."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Review updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CommentResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - user does not own the review",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Review not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @PatchMapping("/{songReviewId}")
+    public ResponseEntity<SongReviewResponse> updateCommentContent(
+            @PathVariable Long songReviewId,
+            @RequestBody ReviewPatchRequest patchRequest) {
+        SongReviewResponse updated = songReviewService.updateSongReviewContent(songReviewId, patchRequest);
+        return ResponseEntity.ok(updated);
     }
 }

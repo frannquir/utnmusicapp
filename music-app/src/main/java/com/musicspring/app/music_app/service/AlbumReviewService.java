@@ -147,4 +147,17 @@ public class AlbumReviewService {
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found."));
         return albumReviewMapper.toResponsePage(albumReviewRepository.findByUser_UserId(userId, pageable));
     }
+
+    public AlbumReviewResponse updateAlbumReviewContent(Long albumReviewId, ReviewPatchRequest patchRequest) {
+        AlbumReviewEntity albumReviewEntity = albumReviewRepository.findById(albumReviewId)
+                        .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + albumReviewId + " not found."));
+
+        AuthService.validateRequestUserOwnership(albumReviewEntity.getUser().getUserId());
+
+        albumReviewEntity.setDescription(patchRequest.getDescription());
+
+        AlbumReviewEntity updated = albumReviewRepository.save(albumReviewEntity);
+
+        return albumReviewMapper.toResponse(updated);
+    }
 }
