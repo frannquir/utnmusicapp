@@ -9,10 +9,12 @@ import com.musicspring.app.music_app.model.mapper.SongReviewMapper;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
+import com.musicspring.app.music_app.security.service.AuthService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -83,6 +85,9 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long id) {
+        Long authenticatedUserId = AuthService.extractUserId();
+        validateUserOwnership(authenticatedUserId,id);
+
         UserEntity user = userRepository.findById(id).orElseThrow(()
                 -> new EntityNotFoundException("User with ID: " + id + " was not found."));
 
@@ -94,6 +99,12 @@ public class UserService {
 
         user.setActive(false);
         userRepository.save(user);
+    }
+
+    private void validateUserOwnership(Long authenticatedUserId, Long requestedUserId) {
+        if (!authenticatedUserId.equals(requestedUserId)) {
+            throw new AccessDeniedException("You can only deactivate your account");
+        }
     }
 
     @Transactional

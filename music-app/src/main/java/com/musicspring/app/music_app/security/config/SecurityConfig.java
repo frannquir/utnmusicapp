@@ -42,7 +42,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/api/v1/users/auth/**", "/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/v1/users/auth/**", "/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**","/api/v1/users/{id}/reactivate").permitAll()
                         .anyRequest().authenticated())
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)

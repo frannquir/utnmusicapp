@@ -21,9 +21,11 @@ public interface SongRepository extends JpaRepository<SongEntity, Long> {
 
     @Query("SELECT s " +
             "FROM SongEntity s " +
-            "LEFT JOIN SongReviewEntity r ON s.songId = r.song.songId AND r.active = true " +
+            "LEFT JOIN SongReviewEntity sr ON sr.song = s " +
+            "WHERE sr.active = true " +
             "GROUP BY s " +
-            "ORDER BY COUNT(r) DESC")
+            "HAVING COUNT(sr) > 0 " +
+            "ORDER BY COUNT(sr) DESC")
     Page<SongEntity> findTopReviewedSongs(Pageable pageable);
 
     @Query("SELECT s " +
