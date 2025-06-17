@@ -6,10 +6,7 @@ import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
 import com.musicspring.app.music_app.model.mapper.ArtistMapper;
-import com.musicspring.app.music_app.repository.AlbumRepository;
-import com.musicspring.app.music_app.repository.AlbumReviewRepository;
-import com.musicspring.app.music_app.repository.ArtistRepository;
-import com.musicspring.app.music_app.repository.UserRepository;
+import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.security.service.AuthService;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,15 +30,19 @@ public class AlbumReviewService {
     private final AlbumMapper albumMapper;
     private final ArtistMapper artistMapper;
     private final ArtistRepository artistRepository;
+    private final ReactionRepository reactionRepository;
+    private final CommentRepository commentRepository;
+
+
     @Autowired
-    public AlbumReviewService(AlbumReviewRepository albumReviewRepository, 
-                             AlbumRepository albumRepository, 
-                             UserRepository userRepository, 
-                             AlbumReviewMapper albumReviewMapper, 
-                             SpotifyService spotifyService, 
-                             AlbumMapper albumMapper, 
-                             ArtistMapper artistMapper, 
-                             ArtistRepository artistRepository) {
+    public AlbumReviewService(AlbumReviewRepository albumReviewRepository,
+                              AlbumRepository albumRepository,
+                              UserRepository userRepository,
+                              AlbumReviewMapper albumReviewMapper,
+                              SpotifyService spotifyService,
+                              AlbumMapper albumMapper,
+                              ArtistMapper artistMapper,
+                              ArtistRepository artistRepository, ReactionRepository reactionRepository, CommentRepository commentRepository) {
         this.albumReviewRepository = albumReviewRepository;
         this.albumRepository = albumRepository;
         this.userRepository = userRepository;
@@ -50,6 +51,8 @@ public class AlbumReviewService {
         this.albumMapper = albumMapper;
         this.artistMapper = artistMapper;
         this.artistRepository = artistRepository;
+        this.reactionRepository = reactionRepository;
+        this.commentRepository = commentRepository;
     }
 
     public Page<AlbumReviewResponse> findAll(Pageable pageable) {
@@ -65,9 +68,33 @@ public class AlbumReviewService {
     public void deleteById(Long id) {
         AlbumReviewEntity albumReview = albumReviewRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found."));
+
         AuthService.validateRequestUserOwnership(albumReview.getUser().getUserId());
+
+        reactionRepository.deleteReactionsOnReviewComments(id);
+        reactionRepository.deleteByReviewId(id);
+        commentRepository.deactivateByReviewId(id);
+
         albumReview.setActive(false);
         albumReviewRepository.save(albumReview);
+    }
+    @Transactional
+    public AlbumReviewResponse reactivateById(Long id) {
+        AlbumReviewEntity albumReview = albumReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found."));
+
+        AuthService.validateRequestUserOwnership(albumReview.getUser().getUserId());
+
+        if (albumReview.getActive()) {
+            throw new IllegalStateException("Album review is already active");
+        }
+
+        albumReview.setActive(true);
+        albumReviewRepository.save(albumReview);
+
+        commentRepository.reactivateByReviewId(id);
+
+        return albumReviewMapper.toResponse(albumReview);
     }
 
     @Transactional

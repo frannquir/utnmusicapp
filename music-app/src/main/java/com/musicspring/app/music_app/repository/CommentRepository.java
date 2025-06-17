@@ -58,4 +58,12 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>{
     )
     """)
     void reactivateCommentsOnUserReviews(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE CommentEntity c SET c.active = false WHERE c.reviewEntity.reviewId = :reviewId")
+    void deactivateByReviewId(@Param("reviewId") Long reviewId);
+
+    @Modifying
+    @Query("UPDATE CommentEntity c SET c.active = true WHERE c.reviewEntity.reviewId = :reviewId AND c.active = false")
+    void reactivateByReviewId(@Param("reviewId") Long reviewId);
 }
