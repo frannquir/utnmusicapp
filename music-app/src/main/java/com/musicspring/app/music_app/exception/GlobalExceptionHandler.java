@@ -38,6 +38,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorDetails.from(errorMessage, request.getDescription(false)));
     }
 
+    @ExceptionHandler(SpotifyServiceException.class)
+    public ResponseEntity<ErrorDetails> handleSpotifyServiceException(SpotifyServiceException ex, WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorDetails.from("Spotify resource not found", request.getDescription(false)));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex, WebRequest request) {
         System.err.println("Unexpected error: " + ex.getMessage());

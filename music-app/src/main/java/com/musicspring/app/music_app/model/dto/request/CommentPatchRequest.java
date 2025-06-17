@@ -19,6 +19,4 @@ public class CommentPatchRequest {
     @Size(min = 1, max = 500)
     private String text;
 
-
-
 }
