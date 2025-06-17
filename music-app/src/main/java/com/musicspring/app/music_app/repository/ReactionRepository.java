@@ -45,4 +45,12 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
     @Modifying
     @Query("DELETE FROM ReactionEntity r WHERE r.user.userId = :userId")
     void deleteByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM ReactionEntity r WHERE r.review.reviewId = :reviewId")
+    void deleteByReviewId(@Param("reviewId") Long reviewId);
+
+    @Modifying
+    @Query("DELETE FROM ReactionEntity r WHERE r.comment.commentId IN (SELECT c.commentId FROM CommentEntity c WHERE c.reviewEntity.reviewId = :reviewId)")
+    void deleteReactionsOnReviewComments(@Param("reviewId") Long reviewId);
 }

@@ -33,17 +33,19 @@ public class SongReviewService {
     private final AlbumRepository albumRepository;
     private final ArtistMapper artistMapper;
     private final ArtistRepository artistRepository;
+    private final ReactionRepository reactionRepository;
+    private final CommentRepository commentRepository;
     @Autowired
     public SongReviewService(SongReviewRepository songReviewRepository,
                              SongRepository songRepository,
                              UserRepository userRepository,
                              SongReviewMapper songReviewMapper,
                              SongMapper songMapper,
-                             SpotifyService spotifyService, 
-                             AlbumMapper albumMapper, 
-                             AlbumRepository albumRepository, 
-                             ArtistMapper artistMapper, 
-                             ArtistRepository artistRepository) {
+                             SpotifyService spotifyService,
+                             AlbumMapper albumMapper,
+                             AlbumRepository albumRepository,
+                             ArtistMapper artistMapper,
+                             ArtistRepository artistRepository, ReactionRepository reactionRepository, CommentRepository commentRepository) {
         this.songReviewRepository = songReviewRepository;
         this.songRepository = songRepository;
         this.userRepository = userRepository;
@@ -54,6 +56,9 @@ public class SongReviewService {
         this.albumRepository = albumRepository;
         this.artistMapper = artistMapper;
         this.artistRepository = artistRepository;
+        this.reactionRepository = reactionRepository;
+
+        this.commentRepository = commentRepository;
     }
 
     public Page<SongReviewResponse> findAll(Pageable pageable) {
@@ -67,10 +72,36 @@ public class SongReviewService {
 
     @Transactional
     public void deleteById(Long id) {
-        SongReviewEntity songReviewEntity = songReviewRepository.findById(id)
-                .orElseThrow(()-> new EntityNotFoundException("Song review with ID: " + id + " not found."));
-        songReviewEntity.setActive(false);
-        songReviewRepository.save(songReviewEntity);
+        SongReviewEntity songReview = songReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Song review with ID: " + id + " not found."));
+
+        AuthService.validateRequestUserOwnership(songReview.getUser().getUserId());
+
+        reactionRepository.deleteReactionsOnReviewComments(id);
+        reactionRepository.deleteByReviewId(id);
+        commentRepository.deactivateByReviewId(id);
+
+        songReview.setActive(false);
+        songReviewRepository.save(songReview);
+    }
+    @Transactional
+    public SongReviewResponse reactivateById(Long id) {
+        SongReviewEntity songReview = songReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Song review with ID: " + id + " not found."));
+
+        AuthService.validateRequestUserOwnership(songReview.getUser().getUserId());
+
+        if (songReview.getActive()) {
+            throw new IllegalStateException("Song review is already active");
+        }
+
+        songReview.setActive(true);
+        songReviewRepository.save(songReview);
+
+
+        commentRepository.reactivateByReviewId(id);
+
+        return songReviewMapper.toResponse(songReview);
     }
     @Transactional
     public SongReviewResponse createSongReview(Long songId, String spotifyId,

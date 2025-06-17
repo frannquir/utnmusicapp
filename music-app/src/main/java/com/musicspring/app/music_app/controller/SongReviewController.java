@@ -367,4 +367,58 @@ public class SongReviewController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Update the content of an existing song review",
+            description = "Modifies the content of a song review identified by its ID. Only the owner of the review can perform this action."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Review updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SongReviewResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - user does not own the review",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Review not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @PatchMapping("/{songReviewId}")
+    public ResponseEntity<SongReviewResponse> updateSongReviewContent(
+            @PathVariable Long songReviewId,
+            @RequestBody ReviewPatchRequest patchRequest) {
+        SongReviewResponse updated = songReviewService.updateSongReviewContent(songReviewId, patchRequest);
+        return ResponseEntity.ok(updated);
+    }
+
 }
