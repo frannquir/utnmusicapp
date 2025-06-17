@@ -9,6 +9,7 @@ import com.musicspring.app.music_app.security.dto.AuthRequest;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.enums.Role;
+import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
 import com.musicspring.app.music_app.security.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,16 +36,18 @@ public class AuthService {
     private final CredentialMapper credentialMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final AuthMapper authMapper;
+
 
     @Autowired
     public AuthService(CredentialRepository credentialsRepository,
-                       AuthenticationManager authenticationManager, 
+                       AuthenticationManager authenticationManager,
                        JwtService jwtService,
                        UserRepository userRepository,
                        UserMapper userMapper,
                        CredentialMapper credentialMapper,
                        PasswordEncoder passwordEncoder,
-                       RoleRepository roleRepository) {
+                       RoleRepository roleRepository, AuthMapper authMapper) {
         this.credentialsRepository = credentialsRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -53,6 +56,15 @@ public class AuthService {
         this.credentialMapper = credentialMapper;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
+        this.authMapper = authMapper;
+    }
+
+    @Transactional
+    public AuthResponse authenticateUser(AuthRequest authRequest) {
+        CredentialEntity user = authenticate(authRequest);
+        String token = jwtService.generateToken(user);
+
+        return authMapper.toAuthResponse(user, token);
     }
     
     public CredentialEntity authenticate(AuthRequest input) {
@@ -86,13 +98,7 @@ public class AuthService {
         credentialEntity.setRefreshToken(newRefreshToken);
         credentialsRepository.save(credentialEntity);
       
-        return AuthResponse.builder()
-                .token(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .id(credentialEntity.getId())
-                .username(credentialEntity.getUsername())
-                .email(credentialEntity.getEmail())
-                .build();
+        return authMapper.toAuthResponse(credentialEntity, newAccessToken);
     }
 
     @Transactional
@@ -122,13 +128,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(credential);
 
-        return AuthResponse.builder()
-                .id(user.getUserId())
-                .username(user.getUsername())
-                .email(credential.getEmail())
-                .token(token)
-                .refreshToken(credential.getRefreshToken())
-                .build();
+        return authMapper.toAuthResponse(credential, token);
     }
 
     public static Long extractUserId() {

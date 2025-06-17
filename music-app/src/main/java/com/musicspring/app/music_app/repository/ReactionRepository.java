@@ -9,6 +9,7 @@ import com.musicspring.app.music_app.model.enums.ReactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,12 +26,23 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
                                                           @Param("reacted") ReactedType reactedType,
                                                           Pageable pageable);
 
+    @Query("SELECT r FROM ReactionEntity r " +
+            "WHERE r.user.userId = :userId AND " +
+            "((r.review IS NOT NULL AND r.review.active = true) OR " +
+            "(r.comment IS NOT NULL AND r.comment.active = true))")
     Page<ReactionEntity> findByUser_UserId(Long userId, Pageable pageable);
 
-    Page<ReactionEntity> findByComment_CommentId(Long commentId, Pageable pageable);
+    @Query("SELECT r FROM ReactionEntity r WHERE r.comment.commentId = :commentId AND r.comment.active = TRUE")
+    Page<ReactionEntity> findByComment_CommentId(@Param("commentId") Long commentId, Pageable pageable);
 
-    Page<ReactionEntity> findByReview_ReviewId(Long reviewId, Pageable pageable);
+    @Query("SELECT r FROM ReactionEntity r WHERE r.review.reviewId = :reviewId AND r.review.active = TRUE")
+    Page<ReactionEntity> findByReview_ReviewId(@Param("reviewId") Long reviewId, Pageable pageable);
+
 
     Optional<ReactionEntity> findByUserAndReview(UserEntity user, ReviewEntity review);
     Optional<ReactionEntity> findByUserAndComment(UserEntity user, CommentEntity comment);
+
+    @Modifying
+    @Query("DELETE FROM ReactionEntity r WHERE r.user.userId = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

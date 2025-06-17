@@ -2,21 +2,19 @@ package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.dto.request.*;
-import com.musicspring.app.music_app.model.entity.AlbumReviewEntity;
+import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
-import com.musicspring.app.music_app.repository.AlbumReviewRepository;
-import com.musicspring.app.music_app.model.entity.SongReviewEntity;
+import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.model.mapper.SongReviewMapper;
-import com.musicspring.app.music_app.repository.SongReviewRepository;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
-import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
-import com.musicspring.app.music_app.repository.UserRepository;
+import com.musicspring.app.music_app.security.service.AuthService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +34,8 @@ public class UserService {
     private final AlbumReviewMapper albumReviewMapper;
     private final SongReviewRepository songReviewRepository;
     private final SongReviewMapper songReviewMapper;
+    private final CommentRepository commentRepository;
+    private final ReactionRepository reactionRepository;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -45,7 +45,7 @@ public class UserService {
                        AlbumReviewRepository albumReviewRepository,
                        SongReviewRepository songReviewRepository,
                        AlbumReviewMapper albumReviewMapper,
-                       SongReviewMapper songReviewMapper) {
+                       SongReviewMapper songReviewMapper, CommentRepository commentRepository, ReactionRepository reactionRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.credentialRepository = credentialRepository;
@@ -54,6 +54,8 @@ public class UserService {
         this.albumReviewMapper = albumReviewMapper;
         this.songReviewMapper = songReviewMapper;
         this.songReviewRepository = songReviewRepository;
+        this.commentRepository = commentRepository;
+        this.reactionRepository = reactionRepository;
     }
 
 
@@ -81,8 +83,42 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with Username: " + username + " was not found."));
     }
 
+    @Transactional
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        Long authenticatedUserId = AuthService.extractUserId();
+        validateUserOwnership(authenticatedUserId,id);
+
+        UserEntity user = userRepository.findById(id).orElseThrow(()
+                -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+
+        commentRepository.deactivateCommentsOnUserReviews(id);
+        albumReviewRepository.deactivateByUserId(id);
+        songReviewRepository.deactivateByUserId(id);
+        commentRepository.deactivateByUserId(id);
+        reactionRepository.deleteByUserId(id);
+
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    private void validateUserOwnership(Long authenticatedUserId, Long requestedUserId) {
+        if (!authenticatedUserId.equals(requestedUserId)) {
+            throw new AccessDeniedException("You can only deactivate your account");
+        }
+    }
+
+    @Transactional
+    public void reactivateUser(Long id) {
+        UserEntity user = userRepository.findByIdAndActiveFalse(id).orElseThrow(()
+                -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+
+        user.setActive(true);
+        userRepository.save(user);
+
+        albumReviewRepository.reactivateByUserId(id);
+        songReviewRepository.reactivateByUserId(id);
+        commentRepository.reactivateByUserId(id);
+        commentRepository.reactivateCommentsOnUserReviews(id);
     }
 
     public Page<UserResponse> searchUsers(String query, Pageable pageable) {

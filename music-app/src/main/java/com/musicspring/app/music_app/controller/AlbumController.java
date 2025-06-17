@@ -38,7 +38,14 @@ public class AlbumController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400",
                     description = "Invalid request parameters",
-                    content = @Content(mediaType = "application/json"))
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
     })
     @GetMapping()
     public ResponseEntity<Page<AlbumResponse>> getAllAlbums(
@@ -63,6 +70,13 @@ public class AlbumController {
                     description = "Album retrieved successfully",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AlbumResponse.class))
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
             ),
             @ApiResponse(responseCode = "404",
                     description = "Album not found",
@@ -90,6 +104,13 @@ public class AlbumController {
                     description = "Album retrieved successfully",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = AlbumResponse.class))),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Album not found",
                     content = @Content(mediaType = "application/json"))
@@ -110,7 +131,14 @@ public class AlbumController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400",
                     description = "Invalid search parameters",
-                    content = @Content(mediaType = "application/json"))
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
     })
     @GetMapping("/search")
     public ResponseEntity<Page<AlbumResponse>> searchAlbums(

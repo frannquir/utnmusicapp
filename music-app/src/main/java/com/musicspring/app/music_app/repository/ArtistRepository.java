@@ -21,9 +21,9 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
             "FROM ArtistEntity a " +
             "LEFT JOIN AlbumEntity al ON al.artist = a " +
             "LEFT JOIN SongEntity s ON s.album = al " +
-            "LEFT JOIN SongReviewEntity sr ON s.songId = sr.song.songId " +
+            "LEFT JOIN SongReviewEntity sr ON s.songId = sr.song.songId AND sr.active = true " +
             "LEFT JOIN ReactionEntity r1 ON sr.reviewId = r1.review.reviewId " +
-            "LEFT JOIN AlbumReviewEntity ar ON al.albumId = ar.album.albumId " +
+            "LEFT JOIN AlbumReviewEntity ar ON al.albumId = ar.album.albumId AND ar.active = true " +
             "LEFT JOIN ReactionEntity r2 ON ar.reviewId = r2.review.reviewId " +
             "WHERE (r1.reactionType = :reactionType OR r2.reactionType = :reactionType) " +
             "GROUP BY a " +
@@ -37,7 +37,9 @@ public interface ArtistRepository extends JpaRepository<ArtistEntity, Long> {
             "LEFT JOIN al.songs s " +
             "LEFT JOIN SongReviewEntity sr ON s.songId = sr.song.songId " +
             "LEFT JOIN AlbumReviewEntity ar ON al.albumId = ar.album.albumId " +
+            "WHERE (ar.active = true OR sr.active = true) " +
             "GROUP BY a " +
             "ORDER BY (COUNT(sr.reviewId) + COUNT(ar.reviewId)) DESC")
     Page<ArtistEntity> findMostReviewedArtists(Pageable pageable);
+
 }

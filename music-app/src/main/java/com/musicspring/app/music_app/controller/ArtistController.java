@@ -46,6 +46,13 @@ public class ArtistController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class))
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(mediaType = "application/json",
@@ -77,6 +84,13 @@ public class ArtistController {
                     description = "Artist retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ArtistResponse.class))
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
                     description = "Artist not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
@@ -102,6 +116,13 @@ public class ArtistController {
                             schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "400", description = "Invalid name parameter",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
     })

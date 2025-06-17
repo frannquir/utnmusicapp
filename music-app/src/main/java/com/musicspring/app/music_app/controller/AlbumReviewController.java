@@ -2,10 +2,7 @@ package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.AlbumReviewRequest;
-import com.musicspring.app.music_app.model.dto.request.CommentPatchRequest;
-import com.musicspring.app.music_app.model.dto.request.ReviewPatchRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
-import com.musicspring.app.music_app.model.dto.response.CommentResponse;
 import com.musicspring.app.music_app.service.AlbumReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Album Reviews", description = "Operations related to album reviews management")
 public class AlbumReviewController {
     private final AlbumReviewService albumReviewService;
+
     @Autowired
     public AlbumReviewController(AlbumReviewService albumReviewService) {
         this.albumReviewService = albumReviewService;
@@ -55,6 +53,13 @@ public class AlbumReviewController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal server error.",
@@ -75,6 +80,7 @@ public class AlbumReviewController {
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
         return ResponseEntity.ok(albumReviewService.findAll(pageable));
     }
+
     @Operation(
             summary = "Retrieve an album review by ID",
             description = "Fetches the details of a specific album review based on its unique ID."
@@ -86,6 +92,13 @@ public class AlbumReviewController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = AlbumReviewResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
             @ApiResponse(
@@ -111,6 +124,7 @@ public class AlbumReviewController {
             @PathVariable Long id) {
         return ResponseEntity.ok(albumReviewService.findById(id));
     }
+
     @Operation(
             summary = "Create a new album review",
             description = "Creates a new album review with the provided data. Requires either albumId (for existing albums) or spotifyId (for Spotify albums). The userId in the request must match the authenticated user.")
@@ -126,6 +140,13 @@ public class AlbumReviewController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input data or missing required identifiers",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -170,6 +191,7 @@ public class AlbumReviewController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedReview);
     }
+
     @Operation(
             summary = "Retrieve album reviews by user ID",
             description = "Fetches a paginated list of album reviews submitted by a specific user, sorted by the specified parameter."
@@ -186,6 +208,13 @@ public class AlbumReviewController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Bad request, invalid parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -222,6 +251,7 @@ public class AlbumReviewController {
         Page<AlbumReviewResponse> albumReviewResponsePage = albumReviewService.findByUserId(userId, pageable);
         return ResponseEntity.ok(albumReviewResponsePage);
     }
+
     @Operation(
             summary = "Get all reviews for a specific album",
             description = "Retrieves a paginated list of reviews for a given album. You can provide either an albumId (for existing albums in the database) or a spotifyId (for albums from Spotify). Pagination and sorting are supported."
@@ -238,6 +268,13 @@ public class AlbumReviewController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Missing or invalid album identifiers, or invalid pagination/sorting parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -278,44 +315,35 @@ public class AlbumReviewController {
     }
 
     @Operation(
-            summary = "Update the content of an existing album review",
-            description = "Modifies the content of a album review identified by its ID. Only the owner of the review can perform this action."
+            summary = "Delete an album review",
+            description = "Performs a logical delete by setting the review's 'active' field to false. Only the owner of the review can perform this action."
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Review updated successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = CommentResponse.class)
-                    )
+            @ApiResponse(responseCode = "204",
+                    description = "Review deleted successfully (logically). No content is returned."
             ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input data",
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized: Authentication is required.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - user does not own the review",
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden: You don't have permission to delete this review.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
-            @ApiResponse(
-                    responseCode = "404",
+            @ApiResponse(responseCode = "404",
                     description = "Review not found",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
-            @ApiResponse(
-                    responseCode = "500",
+            @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(
                             mediaType = "application/json",
@@ -323,11 +351,11 @@ public class AlbumReviewController {
                     )
             )
     })
-    @PatchMapping("/{albumReviewId}")
-    public ResponseEntity<AlbumReviewResponse> updateCommentContent(
-            @PathVariable Long albumReviewId,
-            @RequestBody ReviewPatchRequest patchRequest) {
-        AlbumReviewResponse updated = albumReviewService.updateAlbumReviewContent(albumReviewId, patchRequest);
-        return ResponseEntity.ok(updated);
+    @DeleteMapping("/delete/{reviewId}")
+    public ResponseEntity<Void> deleteAlbumReview(
+            @Parameter(description = "Review ID", example = "10", required = true)
+            @PathVariable Long reviewId) {
+        albumReviewService.deleteById(reviewId);
+        return ResponseEntity.noContent().build();
     }
 }

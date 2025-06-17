@@ -57,6 +57,13 @@ public class SongReviewController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal server error",
@@ -90,6 +97,13 @@ public class SongReviewController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = SongReviewResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
             @ApiResponse(
@@ -131,6 +145,13 @@ public class SongReviewController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input data or missing required identifiers",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -188,6 +209,13 @@ public class SongReviewController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = SongReviewResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
             @ApiResponse(
@@ -252,6 +280,13 @@ public class SongReviewController {
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Song not found",
@@ -287,44 +322,35 @@ public class SongReviewController {
     }
 
     @Operation(
-            summary = "Update the content of an existing song review",
-            description = "Modifies the content of a song review identified by its ID. Only the owner of the review can perform this action."
+            summary = "Delete a song review",
+            description = "Performs a logical delete by setting the review's 'active' field to false. Only the owner of the review can perform this action."
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Review updated successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = CommentResponse.class)
-                    )
+            @ApiResponse(responseCode = "204",
+                    description = "Review deleted successfully (logically). No content is returned."
             ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input data",
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized: Authentication is required.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - user does not own the review",
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden: You don't have permission to delete this review.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
-            @ApiResponse(
-                    responseCode = "404",
+            @ApiResponse(responseCode = "404",
                     description = "Review not found",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
                     )
             ),
-            @ApiResponse(
-                    responseCode = "500",
+            @ApiResponse(responseCode = "500",
                     description = "Internal server error",
                     content = @Content(
                             mediaType = "application/json",
@@ -332,11 +358,13 @@ public class SongReviewController {
                     )
             )
     })
-    @PatchMapping("/{songReviewId}")
-    public ResponseEntity<SongReviewResponse> updateCommentContent(
-            @PathVariable Long songReviewId,
-            @RequestBody ReviewPatchRequest patchRequest) {
-        SongReviewResponse updated = songReviewService.updateSongReviewContent(songReviewId, patchRequest);
-        return ResponseEntity.ok(updated);
+
+    @DeleteMapping("/delete/{reviewId}")
+    public ResponseEntity<Void> deleteSongReview(
+            @Parameter(description = "Review ID", example = "10", required = true)
+            @PathVariable Long reviewId) {
+        songReviewService.deleteById(reviewId);
+        return ResponseEntity.noContent().build();
     }
+
 }

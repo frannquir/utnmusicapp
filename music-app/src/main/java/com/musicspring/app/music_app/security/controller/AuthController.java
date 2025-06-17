@@ -27,11 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication", description = "Operations related to user authentication, registration, and token management")
 public class AuthController {
     private final AuthService authService;
-    private final JwtService jwtService;
 
-    public AuthController(AuthService authService, JwtService jwtService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.jwtService = jwtService;
     }
 
     @Operation(
@@ -54,9 +52,8 @@ public class AuthController {
     })
     @PostMapping()
     public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest authRequest) {
-        CredentialEntity user = authService.authenticate(authRequest);
-        String token = jwtService.generateToken(user);
-        return ResponseEntity.ok(new AuthResponse(token, user.getRefreshToken(), user.getId(), user.getUsername(), user.getEmail()));
+        AuthResponse response = authService.authenticateUser(authRequest);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(

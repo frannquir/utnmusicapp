@@ -19,21 +19,21 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
 
     @Query("SELECT a " +
             "FROM AlbumEntity a " +
-            "LEFT JOIN AlbumReviewEntity r ON a.albumId = r.album.albumId " +
+            "LEFT JOIN AlbumReviewEntity ar ON ar.album = a " +
+            "WHERE ar.active = true " +
             "GROUP BY a " +
-            "HAVING COUNT(r) > 0 " +
-            "ORDER BY COUNT(r) DESC")
+            "HAVING COUNT(ar) > 0 " +
+            "ORDER BY COUNT(ar) DESC")
     Page<AlbumEntity> findTopReviewedAlbums(Pageable pageable);
 
     @Query("SELECT al " +
             "FROM AlbumEntity al " +
-            "LEFT JOIN AlbumReviewEntity ar ON ar.album.albumId = al.albumId " +
+            "LEFT JOIN AlbumReviewEntity ar ON ar.album.albumId = al.albumId AND ar.active = true " +
             "LEFT JOIN ReactionEntity r ON ar.reviewId = r.review.reviewId " +
             "WHERE r.reactionType = :reactionType " +
             "GROUP BY al " +
             "HAVING COUNT(r.id) > 0 " +
             "ORDER BY COUNT(r.id) DESC")
     Page<AlbumEntity> findMostReactedAlbums(@Param("reactionType") ReactionType reactionType, Pageable pageable);
-
-
+    
 }
