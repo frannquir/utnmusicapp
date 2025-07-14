@@ -13,27 +13,25 @@ import java.util.Arrays;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:4200")
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(
+        
+        configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "http://127.0.0.1:4200"
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+        
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        
         configuration.setAllowCredentials(true);
+        
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
