@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -24,14 +25,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                         CustomOAuth2UserService customOAuth2UserService,
-                         OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) {
+                          CustomOAuth2UserService customOAuth2UserService,
+                          OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+                          CorsConfigurationSource corsConfigurationSource) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customOAuth2UserService = customOAuth2UserService;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
@@ -44,7 +48,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/api/v1/users/auth/**", "/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**","/api/v1/users/{id}/reactivate").permitAll()
                         .anyRequest().authenticated())
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
@@ -56,6 +60,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
 }
