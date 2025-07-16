@@ -77,9 +77,14 @@ public class DataInitializer {
             if (adminPassword == null) {
                 throw new IllegalStateException("ADMIN_PASSWORD environment variable is not set");
             }
+<<<<<<< HEAD
 
             String adminRefreshToken = System.getenv("ADMIN_REFRESH_TOKEN");
             
+=======
+            String adminRefreshToken = System.getenv("ADMIN_REFRESH_TOKEN");
+
+>>>>>>> 07916a4 (Update dataInitializer)
             CredentialEntity credential = CredentialEntity.builder()
                     .email("admin@tunecritic.com")
                     .password(passwordEncoder.encode(adminPassword))
@@ -90,6 +95,10 @@ public class DataInitializer {
                     .build();
             
             credentialRepository.save(credential);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 07916a4 (Update dataInitializer)
         }
     }
 }
