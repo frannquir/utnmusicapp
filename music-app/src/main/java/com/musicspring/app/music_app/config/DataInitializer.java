@@ -72,23 +72,24 @@ public class DataInitializer {
             
             RoleEntity adminRole = roleRepository.findByRole(Role.ROLE_ADMIN)
                     .orElseThrow(() -> new RuntimeException("Admin role not found"));
-            
+
+            String adminPassword = System.getenv("ADMIN_PASSWORD");
+            if (adminPassword == null) {
+                throw new IllegalStateException("ADMIN_PASSWORD environment variable is not set");
+            }
+            String adminRefreshToken = System.getenv("ADMIN_REFRESH_TOKEN");
+
             CredentialEntity credential = CredentialEntity.builder()
                     .email("admin@tunecritic.com")
-                    .password(passwordEncoder.encode("Admin123!"))
+                    .password(passwordEncoder.encode(adminPassword))
                     .provider(AuthProvider.LOCAL)
                     .user(adminUser)
                     .roles(Set.of(adminRole))
-                    .refreshToken("dummy-refresh-token-for-admin")
+                    .refreshToken(adminRefreshToken)
                     .build();
             
             credentialRepository.save(credential);
-            
-            System.out.println("✅ Admin user created:");
-            System.out.println("   Email: admin@tunecritic.com");
-            System.out.println("   Password: Admin123!");
-        } else {
-            System.out.println("ℹ️  Admin user already exists - skipping creation");
+
         }
     }
 }
