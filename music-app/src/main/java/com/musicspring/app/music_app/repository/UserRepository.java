@@ -22,10 +22,14 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Page<UserEntity> findByUsernameContainingIgnoreCase(@Param("username") String username, Pageable pageable);
 
     @Query(value = """
-    SELECT AVG(rating) FROM (
-        SELECT rating FROM album_reviews ar WHERE ar.user_id = :userId AND ar.active = true
+    SELECT AVG(all_reviews.rating) FROM (
+        SELECT r.rating FROM reviews r
+        INNER JOIN album_reviews ar ON r.review_id = ar.review_id
+        WHERE r.user_id = :userId AND r.active = true
         UNION ALL
-        SELECT rating FROM song_reviews sr WHERE sr.user_id = :userId AND sr.active = true
+        SELECT r.rating FROM reviews r
+        INNER JOIN song_reviews sr ON r.review_id = sr.review_id
+        WHERE r.user_id = :userId AND r.active = true
     ) all_reviews
     """, nativeQuery = true)
     Double calculateUserAverageRating(@Param("userId") Long userId);
