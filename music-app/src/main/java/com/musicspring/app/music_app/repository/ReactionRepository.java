@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -53,4 +54,19 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
     @Modifying
     @Query("DELETE FROM ReactionEntity r WHERE r.comment.commentId IN (SELECT c.commentId FROM CommentEntity c WHERE c.reviewEntity.reviewId = :reviewId)")
     void deleteReactionsOnReviewComments(@Param("reviewId") Long reviewId);
+
+    @Query("SELECT COUNT(r) FROM ReactionEntity r WHERE r.user.userId = :userId AND r.reactionType = :type")
+    Long countReactionsByUserAndType(@Param("userId") Long userId, @Param("type") ReactionType type);
+
+    @Query("SELECT COUNT(r) FROM ReactionEntity r WHERE r.review.user.userId = :userId AND r.reactionType = :type")
+    Long countReactionsReceivedOnReviews(@Param("userId") Long userId, @Param("type") ReactionType type);
+
+    @Query("SELECT COUNT(r) FROM ReactionEntity r WHERE r.comment.user.userId = :userId AND r.reactionType = :type")
+    Long countReactionsReceivedOnComments(@Param("userId") Long userId, @Param("type") ReactionType type);
+
+    @Query("SELECT COUNT(r) FROM ReactionEntity r WHERE r.user.userId = :userId")
+    Long countByUserUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(r) FROM ReactionEntity r WHERE r.user.userId = :userId AND r.createdAt >= :startOfMonth")
+    Long countReactionsThisMonth(@Param("userId") Long userId, @Param("startOfMonth") LocalDateTime startOfMonth);
 }

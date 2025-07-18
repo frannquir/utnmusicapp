@@ -3,18 +3,21 @@ package com.musicspring.app.music_app.service;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.model.dto.response.SongResponse;
-import com.musicspring.app.music_app.model.entity.ArtistEntity;
+import com.musicspring.app.music_app.model.dto.response.UserProfileResponse;
+import com.musicspring.app.music_app.model.entity.UserEntity;
+import com.musicspring.app.music_app.model.enums.CommentType;
 import com.musicspring.app.music_app.model.enums.ReactionType;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.ArtistMapper;
 import com.musicspring.app.music_app.model.mapper.SongMapper;
-import com.musicspring.app.music_app.repository.AlbumRepository;
-import com.musicspring.app.music_app.repository.ArtistRepository;
-import com.musicspring.app.music_app.repository.SongRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.musicspring.app.music_app.model.mapper.UserMapper;
+import com.musicspring.app.music_app.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 
 @Service
@@ -24,16 +27,34 @@ public class StatisticService {
     private final SongMapper songMapper;
     private final AlbumMapper albumMapper;
     private final ArtistMapper artistMapper;
+    private final UserMapper userMapper;
     private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReactionRepository reactionRepository;
+    private final CommentRepository commentRepository;
+    private final AlbumReviewRepository albumReviewRepository;
+    private final SongReviewRepository songReviewRepository;
 
-    @Autowired
-    public StatisticService(AlbumRepository albumRepository, SongRepository songRepository, SongMapper songMapper, AlbumMapper albumMapper, ArtistMapper artistMapper, ArtistRepository artistRepository) {
+    public StatisticService(AlbumRepository albumRepository, SongRepository songRepository, 
+                           SongMapper songMapper, AlbumMapper albumMapper, ArtistMapper artistMapper, UserMapper userMapper,
+                           ArtistRepository artistRepository, UserRepository userRepository,
+                           ReviewRepository reviewRepository, ReactionRepository reactionRepository,
+                           CommentRepository commentRepository, AlbumReviewRepository albumReviewRepository,
+                           SongReviewRepository songReviewRepository) {
         this.albumRepository = albumRepository;
         this.songRepository = songRepository;
         this.songMapper = songMapper;
         this.albumMapper = albumMapper;
         this.artistMapper = artistMapper;
+        this.userMapper = userMapper;
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
+        this.reactionRepository = reactionRepository;
+        this.commentRepository = commentRepository;
+        this.albumReviewRepository = albumReviewRepository;
+        this.songReviewRepository = songReviewRepository;
     }
 
     public Page<SongResponse> getMostReviewedSongs(Pageable pageable) {
@@ -58,5 +79,47 @@ public class StatisticService {
 
     public Page<ArtistResponse> getMostReviewedArtists(Pageable pageable){
         return artistMapper.toResponsePage(artistRepository.findMostReviewedArtists(pageable));
+    }
+    
+    public UserProfileResponse getUserStatistics(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    
+        LocalDateTime startOfMonth = YearMonth.now().atDay(1).atStartOfDay();
+        
+        Long totalAlbumReviews = albumReviewRepository.countByUserUserId(userId);
+        Long totalSongReviews = songReviewRepository.countByUserUserId(userId);
+        Long totalReviews = reviewRepository.countTotalReviewsByUserId(userId);
+        Double averageRating = userRepository.calculateUserAverageRating(userId);
+        
+        Long totalComments = commentRepository.countByUserUserId(userId);
+        Long albumComments = commentRepository.countCommentsByUserAndType(userId, CommentType.ALBUM_REVIEW);
+        Long songComments = commentRepository.countCommentsByUserAndType(userId, CommentType.SONG_REVIEW);
+        
+        Long totalReactions = reactionRepository.countByUserUserId(userId);
+        Long likesGiven = reactionRepository.countReactionsByUserAndType(userId, ReactionType.LIKE);
+        Long lovesGiven = reactionRepository.countReactionsByUserAndType(userId, ReactionType.LOVE);
+        Long wowsGiven = reactionRepository.countReactionsByUserAndType(userId, ReactionType.WOW);
+        Long dislikesGiven = reactionRepository.countReactionsByUserAndType(userId, ReactionType.DISLIKE);
+        
+        Long likesReceived = reactionRepository.countReactionsReceivedOnReviews(userId, ReactionType.LIKE) +
+                            reactionRepository.countReactionsReceivedOnComments(userId, ReactionType.LIKE);
+        Long lovesReceived = reactionRepository.countReactionsReceivedOnReviews(userId, ReactionType.LOVE) +
+                            reactionRepository.countReactionsReceivedOnComments(userId, ReactionType.LOVE);
+        Long wowsReceived = reactionRepository.countReactionsReceivedOnReviews(userId, ReactionType.WOW) +
+                           reactionRepository.countReactionsReceivedOnComments(userId, ReactionType.WOW);
+        Long dislikesReceived = reactionRepository.countReactionsReceivedOnReviews(userId, ReactionType.DISLIKE) +
+                               reactionRepository.countReactionsReceivedOnComments(userId, ReactionType.DISLIKE);
+        
+        Long reviewsThisMonth = reviewRepository.countReviewsThisMonth(userId, startOfMonth);
+        Long commentsThisMonth = commentRepository.countCommentsThisMonth(userId, startOfMonth);
+        Long reactionsThisMonth = reactionRepository.countReactionsThisMonth(userId, startOfMonth);
+        
+        return userMapper.toUserProfileWithStats(user,
+                totalAlbumReviews, totalSongReviews, totalReviews, averageRating,
+                totalComments, albumComments, songComments,
+                totalReactions, likesGiven, lovesGiven, wowsGiven, dislikesGiven,
+                likesReceived, lovesReceived, wowsReceived, dislikesReceived,
+                reviewsThisMonth, commentsThisMonth, reactionsThisMonth);
     }
 }

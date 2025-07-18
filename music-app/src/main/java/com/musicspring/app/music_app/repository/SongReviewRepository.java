@@ -34,6 +34,9 @@ public interface SongReviewRepository extends JpaRepository<SongReviewEntity,Lon
 
     long countByUser_UserId(Long userId);
 
+    @Query("SELECT COUNT(sr) FROM SongReviewEntity sr WHERE sr.user.userId = :userId AND sr.active = true")
+    Long countSongReviewsByUserId(@Param("userId") Long userId);
+
 
     @Modifying
     @Query("UPDATE SongReviewEntity sr SET sr.active = false WHERE sr.user.userId = :userId")
@@ -42,4 +45,7 @@ public interface SongReviewRepository extends JpaRepository<SongReviewEntity,Lon
     @Modifying
     @Query("UPDATE SongReviewEntity sr SET sr.active = true WHERE sr.user.userId = :userId AND sr.active = false")
     void reactivateByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(sr) FROM SongReviewEntity sr WHERE sr.user.userId = :userId AND sr.active = true")
+    Long countByUserUserId(@Param("userId") Long userId);
 }

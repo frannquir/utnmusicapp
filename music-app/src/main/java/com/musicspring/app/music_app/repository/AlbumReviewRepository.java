@@ -34,6 +34,9 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,L
 
     long countByUser_UserId(Long userId);
 
+    @Query("SELECT COUNT(ar) FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = true")
+    Long countAlbumReviewsByUserId(@Param("userId") Long userId);
+
     @Modifying
     @Query("UPDATE AlbumReviewEntity ar SET ar.active = false WHERE ar.user.userId = :userId")
     void deactivateByUserId(@Param("userId") Long userId);
@@ -42,5 +45,7 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,L
     @Query("UPDATE AlbumReviewEntity ar SET ar.active = true WHERE ar.user.userId = :userId AND ar.active = false")
     void reactivateByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COUNT(ar) FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = true")
+    Long countByUserUserId(@Param("userId") Long userId);
 
 }

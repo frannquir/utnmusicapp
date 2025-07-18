@@ -16,13 +16,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT u FROM UserEntity u WHERE u.username = :username AND u.active = true")
     Optional<UserEntity> findByUsername(@Param("username") String username);
     Boolean existsByUsername(String username);
-    // for username updates
     Boolean existsByUsernameAndUserIdNot(String username, Long userId);
 
     @Query("SELECT u FROM UserEntity u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%')) AND u.active = true")
     Page<UserEntity> findByUsernameContainingIgnoreCase(@Param("username") String username, Pageable pageable);
 
-    // jpql avg rating, better performance.
     @Query(value = """
     SELECT AVG(rating) FROM (
         SELECT rating FROM album_reviews ar WHERE ar.user_id = :userId AND ar.active = true

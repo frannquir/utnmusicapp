@@ -41,4 +41,44 @@ public class UserMapper {
                 .build();
     }
 
+    public UserProfileResponse toUserProfileWithStats(UserEntity user, 
+                                                      Long totalAlbumReviews, Long totalSongReviews, Long totalReviews, Double averageRating,
+                                                      Long totalComments, Long albumComments, Long songComments,
+                                                      Long totalReactions, Long likesGiven, Long lovesGiven, Long wowsGiven, Long dislikesGiven,
+                                                      Long likesReceived, Long lovesReceived, Long wowsReceived, Long dislikesReceived,
+                                                      Long reviewsThisMonth, Long commentsThisMonth, Long reactionsThisMonth) {
+        return UserProfileResponse.builder()
+                .id(user.getUserId())
+                .username(user.getUsername())
+                .biography(user.getCredential() != null ? user.getCredential().getBiography() : null)
+                .profilePictureUrl(user.getCredential() != null ? user.getCredential().getProfilePictureUrl() : null)
+                .joinDate(user.getCreatedAt().toLocalDate().toString())
+                
+                .totalAlbumReviews(totalAlbumReviews)
+                .totalSongReviews(totalSongReviews)
+                .totalReviews(totalReviews)
+                .averageRating(averageRating)
+                
+                .totalComments(totalComments)
+                .albumComments(albumComments)
+                .songComments(songComments)
+                
+                .totalReactions(totalReactions)
+                .likesGiven(likesGiven)
+                .lovesGiven(lovesGiven)
+                .wowsGiven(wowsGiven)
+                .dislikesGiven(dislikesGiven)
+                
+                .likesReceived(likesReceived)
+                .lovesReceived(lovesReceived)
+                .wowsReceived(wowsReceived)
+                .dislikesReceived(dislikesReceived)
+
+                .reviewsThisMonth(reviewsThisMonth)
+                .commentsThisMonth(commentsThisMonth)
+                .reactionsThisMonth(reactionsThisMonth)
+                
+                .build();
+    }
+
 }
