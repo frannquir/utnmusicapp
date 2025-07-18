@@ -11,7 +11,7 @@ public class AuthMapper {
         return AuthResponse.builder()
                 .token(token)
                 .refreshToken(user.getRefreshToken())
-                .id(user.getId())
+                .id(user.getUser().getUserId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .build();
