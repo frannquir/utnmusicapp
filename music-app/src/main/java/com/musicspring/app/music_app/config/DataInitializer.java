@@ -82,7 +82,6 @@ public class DataInitializer {
                 throw new IllegalStateException("ADMIN_PASSWORD environment variable is not set");
             }
 
-            // Crear el CredentialEntity primero sin refresh token
             CredentialEntity credential = CredentialEntity.builder()
                     .email("admin@tunecritic.com")
                     .password(passwordEncoder.encode(adminPassword))
@@ -91,7 +90,6 @@ public class DataInitializer {
                     .roles(Set.of(adminRole))
                     .build();
 
-            // Generar el refresh token usando el JWT service
             String refreshToken = jwtService.generateRefreshToken(credential);
             credential.setRefreshToken(refreshToken);
 
