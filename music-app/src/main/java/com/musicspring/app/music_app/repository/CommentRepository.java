@@ -1,6 +1,7 @@
 package com.musicspring.app.music_app.repository;
 
 import com.musicspring.app.music_app.model.entity.CommentEntity;
+import com.musicspring.app.music_app.model.enums.CommentType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -66,4 +68,13 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>{
     @Modifying
     @Query("UPDATE CommentEntity c SET c.active = true WHERE c.reviewEntity.reviewId = :reviewId AND c.active = false")
     void reactivateByReviewId(@Param("reviewId") Long reviewId);
+
+    @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.user.userId = :userId AND c.commentType = :type AND c.active = true")
+    Long countCommentsByUserAndType(@Param("userId") Long userId, @Param("type") CommentType type);
+
+    @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.user.userId = :userId AND c.active = true")
+    Long countByUserUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.user.userId = :userId AND c.createdAt >= :startOfMonth AND c.active = true")
+    Long countCommentsThisMonth(@Param("userId") Long userId, @Param("startOfMonth") LocalDateTime startOfMonth);
 }

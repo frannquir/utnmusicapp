@@ -8,11 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
-    //Metodos posibles a implementar si queremos trabajar con reseñas sin diferenciar el tipo (album o cancion)
 
     @Query("SELECT r FROM ReviewEntity r WHERE r.reviewId = :reviewId AND r.active = true")
     Optional<ReviewEntity> findById(@Param("reviewId") Long reviewId);
@@ -26,4 +26,10 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     Page<ReviewEntity> findByRatingBetween(Double minRating, Double maxRating, Pageable pageable);
 
     Page<ReviewEntity> findByUser_UserIdAndActiveTrueAndRatingGreaterThanEqual(Long userId, Double rating, Pageable pageable);
+
+    @Query("SELECT COUNT(r) FROM ReviewEntity r WHERE r.user.userId = :userId AND r.active = true")
+    Long countTotalReviewsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(r) FROM ReviewEntity r WHERE r.user.userId = :userId AND r.date >= :startOfMonth AND r.active = true")
+    Long countReviewsThisMonth(@Param("userId") Long userId, @Param("startOfMonth") LocalDateTime startOfMonth);
 }
