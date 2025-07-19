@@ -249,6 +249,9 @@ public class UserService {
         if (request.getActive() != null) {
             user.setActive(request.getActive());
         }
+        if (request.getBiography() != null && user.getCredential() != null) {
+            user.getCredential().setBiography(request.getBiography());
+        }
 
         userRepository.save(user);
 
