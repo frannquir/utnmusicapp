@@ -23,4 +23,7 @@ public class UserUpdateRequest {
 
     @Schema(description = "User's active status", example = "true")
     private Boolean active;
+
+    @Schema(description = "User's biography", example = "I like rock and roll music.")
+    private String biography;
 }

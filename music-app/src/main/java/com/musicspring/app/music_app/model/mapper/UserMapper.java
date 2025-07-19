@@ -13,7 +13,7 @@ import java.util.Set;
 public class UserMapper {
     public UserResponse toResponse(UserEntity user) {
         return UserResponse.builder()
-                .id(user.getUserId())
+                .userId(user.getUserId())
                 .username(user.getUsername())
                 .roles(user.getCredential() != null ? user.getCredential().getRoles() : Set.of())
                 .profilePictureUrl(user.getCredential() != null ? user.getCredential().getProfilePictureUrl() : null)
