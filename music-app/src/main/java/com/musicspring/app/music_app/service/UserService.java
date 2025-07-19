@@ -236,4 +236,22 @@ public class UserService {
         return average != null ? average : 0.0;
     }
 
+    public UserResponse updateUserProfile(Long id, UserUpdateRequest request) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+        if (request.getProfilePictureUrl() != null && user.getCredential() != null) {
+            user.getCredential().setProfilePictureUrl(request.getProfilePictureUrl());
+        }
+        if (request.getActive() != null) {
+            user.setActive(request.getActive());
+        }
+
+        userRepository.save(user);
+
+        return userMapper.toResponse(user);
+    }
 }

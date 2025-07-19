@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 
 public class UserResponse {
-    private Long id;
+    private Long userId;
     private String username;
     private Set<RoleEntity> roles;
     private String profilePictureUrl;
