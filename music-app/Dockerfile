@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY . .
 
+
+# Grant execute permission to mvnw script
+RUN chmod +x mvnw
+
 # Build the application using Maven
 RUN ./mvnw clean package -DskipTests
 
@@ -11,4 +15,4 @@ RUN ./mvnw clean package -DskipTests
 EXPOSE 10000
 
 # Run the jar file with the correct port
-CMD ["java", "-jar", "target/*.jar", "--server.port=10000"]
+CMD java -jar target/*.jar --server.port=10000
