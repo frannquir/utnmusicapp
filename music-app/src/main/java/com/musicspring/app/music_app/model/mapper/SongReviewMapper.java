@@ -2,6 +2,7 @@ package com.musicspring.app.music_app.model.mapper;
 
 import com.musicspring.app.music_app.model.dto.request.SongReviewRequest;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
+import com.musicspring.app.music_app.model.dto.response.UserProfileResponse;
 import com.musicspring.app.music_app.model.entity.SongReviewEntity;
 import com.musicspring.app.music_app.model.entity.SongEntity;
 import com.musicspring.app.music_app.model.entity.UserEntity;
@@ -25,13 +26,16 @@ public class SongReviewMapper {
     }
 
     public SongReviewResponse toResponse(SongReviewEntity songReview) {
+
+        UserProfileResponse userProfile = userMapper.toUserProfileResponse(songReview.getUser());
+
         return SongReviewResponse.builder()
                 .songReviewId(songReview.getReviewId())
                 .rating(songReview.getRating())
                 .description(songReview.getDescription())
                 .date(songReview.getDate())
                 .active(songReview.getActive())
-                .user(userMapper.toResponse(songReview.getUser()))
+                .user(userProfile)
                 .song(songMapper.toResponse(songReview.getSong()))
                 .build();
     }

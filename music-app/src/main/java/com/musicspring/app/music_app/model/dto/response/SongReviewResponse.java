@@ -23,7 +23,7 @@ public class SongReviewResponse {
 
     private Boolean active;
 
-    private UserResponse user;
+    private UserProfileResponse user;
 
     private SongResponse song;
 }

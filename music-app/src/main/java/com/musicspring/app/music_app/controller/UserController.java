@@ -62,7 +62,7 @@ public class UserController {
             )
     })
     @GetMapping("")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
+    public ResponseEntity<List<UserProfileResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
@@ -75,7 +75,7 @@ public class UserController {
                     description = "User found",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserProfileResponse.class)
                     )
             ),
             @ApiResponse(responseCode = "401",
@@ -101,7 +101,7 @@ public class UserController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(
+    public ResponseEntity<UserProfileResponse> getUserById(
             @Parameter(description = "Internal user ID", example = "1")
             @PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
@@ -116,7 +116,7 @@ public class UserController {
                     description = "User found",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserProfileResponse.class)
                     )
             ),
             @ApiResponse(responseCode = "401",
@@ -142,7 +142,7 @@ public class UserController {
             )
     })
     @GetMapping("/username/{username}")
-    public ResponseEntity<UserResponse> getUserByUsername(
+    public ResponseEntity<UserProfileResponse> getUserByUsername(
             @Parameter(description = "Username to search for", example = "johndoe123")
             @PathVariable String username) {
         return ResponseEntity.ok(userService.getUserByUsername(username));
@@ -223,7 +223,7 @@ public class UserController {
             )
     })
     @GetMapping("/search")
-    public ResponseEntity<Page<UserResponse>> searchUsers(
+    public ResponseEntity<Page<UserProfileResponse>> searchUsers(
             @Parameter(description = "Search query for username", example = "john")
             @RequestParam String query,
             @Parameter(hidden = true)
@@ -271,6 +271,40 @@ public class UserController {
     }
 
     @Operation(
+            summary = "Get full user profile by username",
+            description = "Retrieves a comprehensive user profile including personal data, roles, permissions, and calculated statistics."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "User profile retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserProfileResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @GetMapping("/{username}")
+    public ResponseEntity<UserProfileResponse> getUserProfile(
+            @Parameter(description = "Username of the user", example = "john.doe")
+            @PathVariable String username) {
+        return ResponseEntity.ok(userService.getUserProfile(username));
+    }
+
+    @Operation(
             summary = "Update user profile",
             description = "Updates the profile information of a user including username, profile picture URL, and biography."
     )
@@ -279,7 +313,7 @@ public class UserController {
                     description = "User profile updated successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserProfileResponse.class)
                     )
             ),
             @ApiResponse(responseCode = "400",
@@ -319,12 +353,14 @@ public class UserController {
             )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUserProfile(
+    public ResponseEntity<UserProfileResponse> updateUserProfile(
             @Parameter(description = "Internal user ID", example = "1")
             @PathVariable Long id,
             @Parameter(description = "User profile update data")
             @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.updateUserProfile(id, request));
     }
+
+
 
 }

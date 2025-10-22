@@ -259,41 +259,4 @@ public class StatisticController {
         Pageable pageable = PageRequest.of(pageNumber, size);
         return ResponseEntity.ok(statisticService.getMostReviewedArtists(pageable));
     }
-
-    @Operation(
-            summary = "Get comprehensive user statistics",
-            description = "Retrieves detailed statistics for a specific user including reviews, comments, reactions, and monthly activity metrics."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User statistics retrieved successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserProfileResponse.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User not found",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDetails.class)
-                    )
-            )
-    })
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<UserProfileResponse> getUserStatistics(
-            @Parameter(description = "ID of the user to retrieve statistics for", example = "1")
-            @PathVariable Long userId) {
-        return ResponseEntity.ok(statisticService.getUserStatistics(userId));
-    }
 }

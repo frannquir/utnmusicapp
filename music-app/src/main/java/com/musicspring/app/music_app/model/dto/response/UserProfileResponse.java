@@ -2,6 +2,8 @@ package com.musicspring.app.music_app.model.dto.response;
 
 import lombok.*;
 
+import java.util.Set;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,29 +15,8 @@ public class UserProfileResponse {
     private String biography;
     private String profilePictureUrl;
     private String joinDate;
+    private Set<String> roles;
+    private Set<String> permissions;
 
-    private Long totalAlbumReviews;
-    private Long totalSongReviews;
-    private Double averageRating;
-
-    private Long totalReviews;
-
-    private Long totalComments;
-    private Long albumComments;
-    private Long songComments;
-
-    private Long totalReactions;
-    private Long likesGiven;
-    private Long lovesGiven;
-    private Long wowsGiven;
-    private Long dislikesGiven;
-
-    private Long likesReceived;
-    private Long lovesReceived;
-    private Long wowsReceived;
-    private Long dislikesReceived;
-    
-    private Long reviewsThisMonth;
-    private Long commentsThisMonth;
-    private Long reactionsThisMonth;
+   private UserStatsResponse userStats;
 }

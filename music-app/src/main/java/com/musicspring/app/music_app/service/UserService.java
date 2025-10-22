@@ -36,6 +36,7 @@ public class UserService {
     private final SongReviewMapper songReviewMapper;
     private final CommentRepository commentRepository;
     private final ReactionRepository reactionRepository;
+    private final StatisticService statisticService;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -45,7 +46,7 @@ public class UserService {
                        AlbumReviewRepository albumReviewRepository,
                        SongReviewRepository songReviewRepository,
                        AlbumReviewMapper albumReviewMapper,
-                       SongReviewMapper songReviewMapper, CommentRepository commentRepository, ReactionRepository reactionRepository) {
+                       SongReviewMapper songReviewMapper, CommentRepository commentRepository, ReactionRepository reactionRepository, StatisticService statisticService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.credentialRepository = credentialRepository;
@@ -56,19 +57,20 @@ public class UserService {
         this.songReviewRepository = songReviewRepository;
         this.commentRepository = commentRepository;
         this.reactionRepository = reactionRepository;
+        this.statisticService = statisticService;
     }
 
 
-    public List<UserResponse> getAllUsers() {
+    public List<UserProfileResponse> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(userMapper::toResponse)
+                .map(userMapper::toUserProfileResponse)
                 .collect(Collectors.toList());
     }
 
 
-    public UserResponse findById(Long id) {
+    public UserProfileResponse findById(Long id) {
         return userRepository.findById(id)
-                .map(userMapper::toResponse)
+                .map(userMapper::toUserProfileResponse)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
     }
 
@@ -77,9 +79,9 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
     }
 
-    public UserResponse getUserByUsername(String username) {
+    public UserProfileResponse getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(userMapper::toResponse)
+                .map(userMapper::toUserProfileResponse)
                 .orElseThrow(() -> new EntityNotFoundException("User with Username: " + username + " was not found."));
     }
 
@@ -121,16 +123,15 @@ public class UserService {
         commentRepository.reactivateCommentsOnUserReviews(id);
     }
 
-    public Page<UserResponse> searchUsers(String query, Pageable pageable) {
+    public Page<UserProfileResponse> searchUsers(String query, Pageable pageable) {
         Page<UserEntity> userPage = userRepository.findByUsernameContainingIgnoreCase(query, pageable);
-        return userPage.map(userMapper::toResponse);
+        return userPage.map(userMapper::toUserProfileResponse);
     }
 
     @Transactional
-    public UserResponse updateUser(Long id, UserUpdateRequest updateRequest) {
+    public UserProfileResponse updateUser(Long id, UserUpdateRequest updateRequest) {
 
         UserEntity existingUser = findEntityById(id);
-        // Update only the present fields
         if (updateRequest.getUsername() != null &&
                 !updateRequest.getUsername().equals(existingUser.getUsername())) {
 
@@ -148,7 +149,7 @@ public class UserService {
             existingUser.setActive(updateRequest.getActive());
 
         UserEntity savedUser = userRepository.save(existingUser);
-        return userMapper.toResponse(savedUser);
+        return userMapper.toUserProfileResponse(savedUser);
     }
 
     @Transactional
@@ -159,8 +160,6 @@ public class UserService {
         if (credential == null)
             throw new IllegalStateException("User has no credentials");
 
-
-        // Verify current password
         if (!passwordEncoder.matches(passwordRequest.getCurrentPassword(), credential.getPassword()))
             throw new IllegalArgumentException("Current password is incorrect");
 
@@ -172,7 +171,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateProfile(Long id, ProfileUpdateRequest profileRequest) {
+    public UserProfileResponse updateProfile(Long id, ProfileUpdateRequest profileRequest) {
         UserEntity user = findEntityById(id);
         CredentialEntity credential = user.getCredential();
 
@@ -188,31 +187,24 @@ public class UserService {
             credentialRepository.save(credential);
         }
 
-        return userMapper.toResponse(user);
+        return userMapper.toUserProfileResponse(user);
     }
 
-    public UserResponse getCurrentUser(Authentication authentication) {
+    public UserProfileResponse getCurrentUser(Authentication authentication) {
         String email = authentication.getName();
         CredentialEntity credential = credentialRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return userMapper.toResponse(credential.getUser());
+        return userMapper.toUserProfileResponse(credential.getUser());
     }
 
     public UserProfileResponse getUserProfile(String username) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User with username: " + username + " was not found."));
 
-        long albumReviewCount = albumReviewRepository.countByUser_UserId(user.getUserId());
-        long songReviewCount = songReviewRepository.countByUser_UserId(user.getUserId());
+        UserStatsResponse stats = statisticService.getUserStatistics(user.getUserId());
 
-        Double avgRating = calculateUserAverageRating(user.getUserId());
-
-        UserProfileResponse userProfile = userMapper.toUserProfile(user);
-        userProfile.setTotalAlbumReviews(albumReviewCount);
-        userProfile.setTotalSongReviews(songReviewCount);
-        userProfile.setAverageRating(avgRating);
-        return userProfile;
+        return userMapper.toUserProfileResponse(user, stats);
     }
 
     public Page<AlbumReviewResponse> getUserAlbumReviews(String username, Pageable pageable) {
@@ -236,7 +228,7 @@ public class UserService {
         return average != null ? average : 0.0;
     }
 
-    public UserResponse updateUserProfile(Long id, UserUpdateRequest request) {
+    public UserProfileResponse updateUserProfile(Long id, UserUpdateRequest request) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
@@ -255,6 +247,6 @@ public class UserService {
 
         userRepository.save(user);
 
-        return userMapper.toResponse(user);
+        return userMapper.toUserProfileResponse(user);
     }
 }

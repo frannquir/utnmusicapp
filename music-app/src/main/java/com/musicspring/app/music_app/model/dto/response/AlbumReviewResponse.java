@@ -23,7 +23,7 @@ public class AlbumReviewResponse {
 
     private Boolean active;
 
-    private UserResponse user;
+    private UserProfileResponse user;
 
     private AlbumResponse album;
 
