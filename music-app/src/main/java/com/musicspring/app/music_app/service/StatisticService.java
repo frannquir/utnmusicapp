@@ -1,9 +1,6 @@
 package com.musicspring.app.music_app.service;
 
-import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
-import com.musicspring.app.music_app.model.dto.response.SongResponse;
-import com.musicspring.app.music_app.model.dto.response.UserProfileResponse;
+import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.enums.CommentType;
 import com.musicspring.app.music_app.model.enums.ReactionType;
@@ -81,9 +78,7 @@ public class StatisticService {
         return artistMapper.toResponsePage(artistRepository.findMostReviewedArtists(pageable));
     }
     
-    public UserProfileResponse getUserStatistics(Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public UserStatsResponse getUserStatistics(Long userId) {
     
         LocalDateTime startOfMonth = YearMonth.now().atDay(1).atStartOfDay();
         
@@ -114,12 +109,13 @@ public class StatisticService {
         Long reviewsThisMonth = reviewRepository.countReviewsThisMonth(userId, startOfMonth);
         Long commentsThisMonth = commentRepository.countCommentsThisMonth(userId, startOfMonth);
         Long reactionsThisMonth = reactionRepository.countReactionsThisMonth(userId, startOfMonth);
-        
-        return userMapper.toUserProfileWithStats(user,
+
+        return new UserStatsResponse(
                 totalAlbumReviews, totalSongReviews, totalReviews, averageRating,
                 totalComments, albumComments, songComments,
                 totalReactions, likesGiven, lovesGiven, wowsGiven, dislikesGiven,
                 likesReceived, lovesReceived, wowsReceived, dislikesReceived,
-                reviewsThisMonth, commentsThisMonth, reactionsThisMonth);
+                reviewsThisMonth, commentsThisMonth, reactionsThisMonth
+        );
     }
 }
