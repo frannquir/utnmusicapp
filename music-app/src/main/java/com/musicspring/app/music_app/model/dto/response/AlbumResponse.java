@@ -19,6 +19,8 @@ public class AlbumResponse {
 
     private String artistName;
 
+    private String artistSpotifyId;
+
     private String imageUrl;
 
     private String spotifyLink;

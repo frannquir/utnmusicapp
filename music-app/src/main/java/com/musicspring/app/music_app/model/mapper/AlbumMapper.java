@@ -1,10 +1,7 @@
 package com.musicspring.app.music_app.model.mapper;
 
-import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.entity.AlbumEntity;
-import com.musicspring.app.music_app.service.ArtistService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -21,6 +18,7 @@ public class AlbumMapper {
                 .spotifyId(album.getSpotifyId())
                 .title(album.getTitle())
                 .artistName(album.getArtist().getName())
+                .artistSpotifyId(album.getArtist().getSpotifyId())
                 .imageUrl(album.getImageUrl())
                 .spotifyLink(album.getSpotifyLink())
                 .releaseDate(album.getReleaseDate())
@@ -40,13 +38,13 @@ public class AlbumMapper {
         return albumEntityPage.map(this::toResponse);
     }
 
-    public AlbumEntity requestToEntity (AlbumRequest albumRequest){
+    public AlbumEntity toEntity (AlbumResponse albumResponse){
         return AlbumEntity.builder()
-                .spotifyId(albumRequest.getSpotifyId())
-                .title(albumRequest.getTitle())
-                .imageUrl(albumRequest.getImageUrl())
-                .spotifyLink(albumRequest.getSpotifyLink())
-                .releaseDate(albumRequest.getReleaseDate())
+                .spotifyId(albumResponse.getSpotifyId())
+                .title(albumResponse.getTitle())
+                .imageUrl(albumResponse.getImageUrl())
+                .spotifyLink(albumResponse.getSpotifyLink())
+                .releaseDate(albumResponse.getReleaseDate())
                 .build();
     }
 }

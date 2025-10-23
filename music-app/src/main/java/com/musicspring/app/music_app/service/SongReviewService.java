@@ -1,6 +1,9 @@
 package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.request.*;
+import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
+import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
@@ -153,26 +156,26 @@ public class SongReviewService {
     }
 
     private SongEntity createSongFromSpotify(String spotifyId) {
-        SongRequest songRequest = spotifyService.getSong(spotifyId);
-        
-        if (artistRepository.findBySpotifyId(songRequest.getArtistSpotifyId()).isEmpty()) {
-            ArtistRequest artistRequest = spotifyService.getArtist(songRequest.getArtistSpotifyId());
-            ArtistEntity artistEntity = artistMapper.toEntity(artistRequest);
+        SongResponse songResponse = spotifyService.getSong(spotifyId);
+
+        if (artistRepository.findBySpotifyId(songResponse.getArtistSpotifyId()).isEmpty()) {
+            ArtistResponse artistResponse = spotifyService.getArtist(songResponse.getArtistSpotifyId());
+            ArtistEntity artistEntity = artistMapper.toEntity(artistResponse);
             artistRepository.save(artistEntity);
         }
-        
-        if (albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId()).isEmpty()) {
-            AlbumRequest albumRequest = spotifyService.getAlbum(songRequest.getAlbumSpotifyId());
-            AlbumEntity albumEntity = albumMapper.requestToEntity(albumRequest);
-            albumEntity.setArtist(artistRepository.findBySpotifyId(songRequest.getArtistSpotifyId())
+
+        if (albumRepository.findBySpotifyId(songResponse.getAlbumSpotifyId()).isEmpty()) {
+            AlbumResponse albumResponse = spotifyService.getAlbum(songResponse.getAlbumSpotifyId());
+            AlbumEntity albumEntity = albumMapper.toEntity(albumResponse);
+            albumEntity.setArtist(artistRepository.findBySpotifyId(songResponse.getArtistSpotifyId())
                     .orElseThrow(() -> new EntityNotFoundException("Artist not found")));
             albumRepository.save(albumEntity);
         }
-        
-        SongEntity newSong = songMapper.toEntity(songRequest);
-        newSong.setAlbum(albumRepository.findBySpotifyId(songRequest.getAlbumSpotifyId())
+
+        SongEntity newSong = songMapper.toEntity(songResponse);
+        newSong.setAlbum(albumRepository.findBySpotifyId(songResponse.getAlbumSpotifyId())
                 .orElseThrow(() -> new EntityNotFoundException("Album not found")));
-        
+
         return songRepository.save(newSong);
     }
     public Page<SongReviewResponse> findBySong(Long songId, String spotifyId, Pageable pageable) {
