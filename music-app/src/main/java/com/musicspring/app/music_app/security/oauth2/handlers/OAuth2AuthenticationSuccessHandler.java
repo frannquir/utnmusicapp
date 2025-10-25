@@ -12,6 +12,7 @@ import com.musicspring.app.music_app.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -48,6 +49,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final CredentialRepository credentialRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final String frontendRedirectUri;
 
     /**
      * @param jwtService           Service for JWT token operations
@@ -59,11 +61,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     public OAuth2AuthenticationSuccessHandler(JwtService jwtService,
                                               CredentialRepository credentialRepository,
                                               UserRepository userRepository,
-                                              RoleRepository roleRepository) {
+                                              RoleRepository roleRepository, @Value("${app.oauth2.redirect-uri}") String frontendRedirectUri) {
         this.jwtService = jwtService;
         this.credentialRepository = credentialRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.frontendRedirectUri = frontendRedirectUri;
     }
 
     /**
@@ -115,9 +118,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // Redirect to frontend OAuth2 handler with authentication token
         // Frontend will extract token from URL and store for API authentication
-        String redirectUri = "http://localhost:3000/oauth2/redirect";
-        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+        String targetUrl = UriComponentsBuilder.fromUriString(this.frontendRedirectUri)
                 .queryParam("token", token)
+                .queryParam("refresh_token", credential.getRefreshToken())
                 .build().toUriString();
 
         // Perform the redirect to frontend application

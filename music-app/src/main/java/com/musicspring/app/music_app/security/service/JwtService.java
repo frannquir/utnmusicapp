@@ -1,11 +1,13 @@
 package com.musicspring.app.music_app.security.service;
 
+import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
@@ -14,7 +16,9 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -55,15 +59,35 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDetails.getAuthorities());
-        
-        // Add user ID to JWT if userDetails is CredentialEntity
-        if (userDetails instanceof com.musicspring.app.music_app.security.entity.CredentialEntity credential) {
+
+        if (userDetails instanceof CredentialEntity credential) {
+            Set<String> roleNames = credential.getRoles().stream()
+                    .map(roleEntity -> roleEntity.getRole().name())
+                    .collect(Collectors.toSet());
+            claims.put("roles", roleNames);
+
+            Set<String> permissionNames = credential.getRoles().stream()
+                    .flatMap(roleEntity -> roleEntity.getPermits().stream())
+                    .map(permitEntity -> permitEntity.getPermit().name())
+                    .collect(Collectors.toSet());
+            claims.put("permissions", permissionNames);
+
             if (credential.getUser() != null) {
                 claims.put("userId", credential.getUser().getUserId());
             }
+
+            if (credential.getEmail() != null) {
+                claims.put("email", credential.getEmail());
+            }
+
+        } else {
+            Set<String> authorities = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
+            claims.put("roles", authorities);
+            claims.put("permissions", Set.of());
         }
-        
+
         return buildToken(claims, userDetails, jwtExpiration);
     }
 
