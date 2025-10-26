@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,10 +34,9 @@ public class UserController {
         this.userService = userService;
     }
 
-
     @Operation(
             summary = "Get all users",
-            description = "Retrieves a list of all registered users in the system."
+            description = "Retrieves a list of all registered users in the system, returning their full profiles."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -68,7 +68,7 @@ public class UserController {
 
     @Operation(
             summary = "Get a user by ID",
-            description = "Retrieves a user using their internal unique identifier."
+            description = "Retrieves the full user profile (including stats) using their internal unique identifier."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -109,7 +109,7 @@ public class UserController {
 
     @Operation(
             summary = "Get a user by username",
-            description = "Retrieves a user using their unique username."
+            description = "Retrieves the full user profile (including stats) using their unique username."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -145,16 +145,17 @@ public class UserController {
     public ResponseEntity<UserProfileResponse> getUserByUsername(
             @Parameter(description = "Username to search for", example = "johndoe123")
             @PathVariable String username) {
+        // Llama al método del servicio que devuelve el perfil completo con stats
         return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
     @Operation(
             summary = "Delete a user by ID",
-            description = "Permanently removes a user and their associated data from the system."
+            description = "Logically deactivates a user account (sets active to false)."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204",
-                    description = "User deleted successfully",
+                    description = "User deactivated successfully",
                     content = @Content
             ),
             @ApiResponse(responseCode = "401",
@@ -189,15 +190,15 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(
-            @Parameter(description = "Internal user ID", example = "1")
-            @PathVariable Long id) {
+                            @Parameter(description = "Internal user ID", example = "1")
+                            @PathVariable Long id) {
         userService.deleteUser(id);
     }
 
 
     @Operation(
             summary = "Search users by username",
-            description = "Performs a case-insensitive search for users whose usernames contain the specified query string."
+            description = "Performs a case-insensitive search for users whose usernames contain the specified query string, returning paginated full profiles."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -248,7 +249,7 @@ public class UserController {
                     )
             ),
             @ApiResponse(responseCode = "404",
-                    description = "User not found",
+                    description = "User not found or already active",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -271,19 +272,26 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get full user profile by username",
-            description = "Retrieves a comprehensive user profile including personal data, roles, permissions, and calculated statistics."
+            summary = "Get current logged-in user's profile",
+            description = "Retrieves the full profile, including stats, roles, and permissions, for the user making the request based on their authentication token."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "User profile retrieved successfully",
+                    description = "Profile retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserProfileResponse.class)
                     )
             ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication required to access this resource",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
             @ApiResponse(responseCode = "404",
-                    description = "User not found",
+                    description = "User associated with the token not found",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -297,16 +305,17 @@ public class UserController {
                     )
             )
     })
-    @GetMapping("/{username}")
-    public ResponseEntity<UserProfileResponse> getUserProfile(
-            @Parameter(description = "Username of the user", example = "john.doe")
-            @PathVariable String username) {
-        return ResponseEntity.ok(userService.getUserProfile(username));
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getCurrentUserProfile(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(userService.getCurrentUser(authentication));
     }
 
     @Operation(
             summary = "Update user profile",
-            description = "Updates the profile information of a user including username, profile picture URL, and biography."
+            description = "Updates the profile information (username, picture, bio) for a specific user ID. Requires user to be authenticated and updating their own profile."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -317,7 +326,7 @@ public class UserController {
                     )
             ),
             @ApiResponse(responseCode = "400",
-                    description = "Invalid input data",
+                    description = "Invalid input data (e.g., username already taken)",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -331,7 +340,7 @@ public class UserController {
                     )
             ),
             @ApiResponse(responseCode = "403",
-                    description = "You can only update your own profile",
+                    description = "Forbidden: You can only update your own profile",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDetails.class)
@@ -354,13 +363,10 @@ public class UserController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<UserProfileResponse> updateUserProfile(
-            @Parameter(description = "Internal user ID", example = "1")
+            @Parameter(description = "ID of the user to update", example = "1")
             @PathVariable Long id,
             @Parameter(description = "User profile update data")
             @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.updateUserProfile(id, request));
     }
-
-
-
 }
