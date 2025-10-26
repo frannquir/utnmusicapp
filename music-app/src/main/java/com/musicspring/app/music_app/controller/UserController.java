@@ -2,7 +2,7 @@ package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.UserUpdateRequest;
-import com.musicspring.app.music_app.model.dto.response.*; // Asegúrate de importar UserProfileResponse y ErrorDetails
+import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
