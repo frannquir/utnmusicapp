@@ -105,13 +105,20 @@ public class JwtService {
                 .getBody();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails)
-    {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()))
-                && !isTokenExpired(token)
-                && userDetails.isAccountNonLocked()
-                && userDetails.isEnabled();
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String subjectFromToken = extractUsername(token);
+
+        String emailFromUserDetails = null;
+        if (userDetails instanceof CredentialEntity credential) {
+            emailFromUserDetails = credential.getEmail();
+        }
+
+        boolean isSubjectMatch = emailFromUserDetails != null && subjectFromToken.equalsIgnoreCase(emailFromUserDetails);
+        boolean isNotExpired = !isTokenExpired(token);
+        boolean isNonLocked = userDetails.isAccountNonLocked();
+        boolean isEnabled = userDetails.isEnabled();
+
+        return (isSubjectMatch && isNotExpired && isNonLocked && isEnabled);
     }
 
     private String buildToken(
@@ -119,10 +126,18 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
+        String subject;
+
+        if(userDetails instanceof CredentialEntity credential && credential.getEmail() != null) {
+            subject = credential.getEmail();
+        } else {
+            subject = userDetails.getUsername();
+        }
+
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() +
                         expiration))

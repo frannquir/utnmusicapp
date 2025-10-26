@@ -80,9 +80,12 @@ public class UserService {
     }
 
     public UserProfileResponse getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(userMapper::toUserProfileResponse)
+        UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User with Username: " + username + " was not found."));
+
+        UserStatsResponse stats = statisticService.getUserStatistics(user.getUserId());
+
+        return userMapper.toUserProfileResponse(user, stats); // Usa el método del mapper que acepta stats
     }
 
     @Transactional
@@ -192,20 +195,19 @@ public class UserService {
 
     public UserProfileResponse getCurrentUser(Authentication authentication) {
         String email = authentication.getName();
-        CredentialEntity credential = credentialRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return userMapper.toUserProfileResponse(credential.getUser());
-    }
-
-    public UserProfileResponse getUserProfile(String username) {
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with username: " + username + " was not found."));
+        CredentialEntity credential = credentialRepository.findByEmailOrUsername(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found for email: " + email));
+        UserEntity user = credential.getUser();
+        if (user == null) {
+            throw new EntityNotFoundException("User entity not associated with credential for email: " + email);
+        }
 
         UserStatsResponse stats = statisticService.getUserStatistics(user.getUserId());
 
         return userMapper.toUserProfileResponse(user, stats);
     }
+
 
     public Page<AlbumReviewResponse> getUserAlbumReviews(String username, Pageable pageable) {
         UserEntity user = userRepository.findByUsername(username)
