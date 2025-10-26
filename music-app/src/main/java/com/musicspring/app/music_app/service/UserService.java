@@ -85,7 +85,7 @@ public class UserService {
 
         UserStatsResponse stats = statisticService.getUserStatistics(user.getUserId());
 
-        return userMapper.toUserProfileResponse(user, stats); // Usa el método del mapper que acepta stats
+        return userMapper.toUserProfileResponse(user, stats); 
     }
 
     @Transactional
