@@ -1,9 +1,9 @@
 package com.musicspring.app.music_app.spotify.service;
 
 import com.musicspring.app.music_app.exception.SpotifyServiceException;
-import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
-import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
-import com.musicspring.app.music_app.model.dto.request.SongRequest;
+import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
+import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.spotify.config.SpotifyConfig;
 import com.musicspring.app.music_app.spotify.mapper.SpotifyMapper;
 import com.musicspring.app.music_app.spotify.model.UnifiedSearchResponse;
@@ -48,7 +48,7 @@ public class SpotifyService {
         }
     }
 
-    public Page<AlbumRequest> searchAlbums(String query, Pageable pageable) {
+    public Page<AlbumResponse> searchAlbums(String query, Pageable pageable) {
         checkTokenExpiration();
 
         try {
@@ -59,11 +59,11 @@ public class SpotifyService {
 
             Paging<AlbumSimplified> results = request.execute();
 
-            List<AlbumRequest> albumRequests = Arrays.stream(results.getItems())
-                    .map(spotifyMapper::toAlbumRequest)
+            List<AlbumResponse> albumResponses = Arrays.stream(results.getItems())
+                    .map(spotifyMapper::toAlbumResponse)
                     .collect(Collectors.toList());
 
-            return new PageImpl<>(albumRequests, pageable, results.getTotal());
+            return new PageImpl<>(albumResponses, pageable, results.getTotal());
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new SpotifyServiceException("Error searching albums", e);
@@ -72,7 +72,7 @@ public class SpotifyService {
 
 
 
-    public Page<ArtistRequest> searchArtists(String query, Pageable pageable) {
+    public Page<ArtistResponse> searchArtists(String query, Pageable pageable) {
         checkTokenExpiration();
 
         try {
@@ -83,11 +83,11 @@ public class SpotifyService {
 
             Paging<Artist> results = request.execute();
 
-            List<ArtistRequest> artistRequests = Arrays.stream(results.getItems())
-                    .map(spotifyMapper::toArtistRequest)
+            List<ArtistResponse> artistResponses = Arrays.stream(results.getItems())
+                    .map(spotifyMapper::toArtistResponse)
                     .collect(Collectors.toList());
 
-            return new PageImpl<>(artistRequests, pageable, results.getTotal());
+            return new PageImpl<>(artistResponses, pageable, results.getTotal());
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new SpotifyServiceException("Error searching artists", e);
@@ -96,7 +96,7 @@ public class SpotifyService {
 
 
 
-    public Page<SongRequest> searchSongs(String query, Pageable pageable) {
+    public Page<SongResponse> searchSongs(String query, Pageable pageable) {
         checkTokenExpiration();
 
         try {
@@ -107,11 +107,11 @@ public class SpotifyService {
 
             Paging<Track> results = request.execute();
 
-            List<SongRequest> songRequests = Arrays.stream(results.getItems())
-                    .map(spotifyMapper::toSongRequest)
+            List<SongResponse> songResponses = Arrays.stream(results.getItems())
+                    .map(spotifyMapper::toSongResponse)
                     .collect(Collectors.toList());
 
-            return new PageImpl<>(songRequests, pageable, results.getTotal());
+            return new PageImpl<>(songResponses, pageable, results.getTotal());
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new SpotifyServiceException("Error searching songs", e);
@@ -120,42 +120,42 @@ public class SpotifyService {
 
 
 
-    public AlbumRequest getAlbum(String albumId) {
+    public AlbumResponse getAlbum(String albumId) {
         checkTokenExpiration();
 
         try {
             GetAlbumRequest request = spotifyApi.getAlbum(albumId).build();
             se.michaelthelin.spotify.model_objects.specification.Album spotifyAlbum = request.execute();
 
-            return spotifyMapper.toAlbumRequest(spotifyAlbum);
+            return spotifyMapper.toAlbumResponse(spotifyAlbum);
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new SpotifyServiceException("Error obtaining album", e);
         }
     }
 
-    public ArtistRequest getArtist(String artistId) {
+    public ArtistResponse getArtist(String artistId) {
         checkTokenExpiration();
 
         try {
             GetArtistRequest request = spotifyApi.getArtist(artistId).build();
             se.michaelthelin.spotify.model_objects.specification.Artist spotifyArtist = request.execute();
 
-            return spotifyMapper.toArtistRequest(spotifyArtist);
+            return spotifyMapper.toArtistResponse(spotifyArtist);
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new SpotifyServiceException("Error obtaining artist", e);
         }
     }
 
-    public SongRequest getSong(String trackId) {
+    public SongResponse getSong(String trackId) {
         checkTokenExpiration();
 
         try {
             GetTrackRequest request = spotifyApi.getTrack(trackId).build();
             Track spotifyTrack = request.execute();
 
-            return spotifyMapper.toSongRequest(spotifyTrack);
+            return spotifyMapper.toSongResponse(spotifyTrack);
 
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new SpotifyServiceException("Error obtaining song", e);
@@ -166,14 +166,14 @@ public class SpotifyService {
         UnifiedSearchResponse response = new UnifiedSearchResponse();
         response.setQuery(query);
 
-        Page<SongRequest> songResults = searchSongs(query, pageable);
-        Page<ArtistRequest> artistResults = searchArtists(query, pageable);
-        Page<AlbumRequest> albumResults = searchAlbums(query, pageable);
-        
+        Page<SongResponse> songResults = searchSongs(query, pageable);
+        Page<ArtistResponse> artistResults = searchArtists(query, pageable);
+        Page<AlbumResponse> albumResults = searchAlbums(query, pageable);
+
         response.setSongs(songResults);
         response.setArtists(artistResults);
         response.setAlbums(albumResults);
-        
+
         return response;
     }
 }

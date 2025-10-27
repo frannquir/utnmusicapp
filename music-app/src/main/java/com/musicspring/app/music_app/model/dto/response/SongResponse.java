@@ -19,7 +19,11 @@ public class SongResponse {
 
     private String artistName;
 
+    private String artistSpotifyId;
+
     private String albumName;
+
+    private String albumSpotifyId;
 
     private String imageUrl;
 

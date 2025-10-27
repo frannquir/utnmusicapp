@@ -1,7 +1,9 @@
 package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.request.*;
+import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
@@ -146,18 +148,18 @@ public class AlbumReviewService {
     }
 
     private AlbumEntity createAlbumFromSpotify(String spotifyId) {
-        AlbumRequest albumRequest = spotifyService.getAlbum(spotifyId);
-        
-        if (artistRepository.findBySpotifyId(albumRequest.getArtistSpotifyId()).isEmpty()) {
-            ArtistRequest artistRequest = spotifyService.getArtist(albumRequest.getArtistSpotifyId());
-            ArtistEntity artistEntity = artistMapper.toEntity(artistRequest);
+        AlbumResponse albumResponse = spotifyService.getAlbum(spotifyId);
+
+        if (artistRepository.findBySpotifyId(albumResponse.getArtistSpotifyId()).isEmpty()) {
+            ArtistResponse artistResponse = spotifyService.getArtist(albumResponse.getArtistSpotifyId());
+            ArtistEntity artistEntity = artistMapper.toEntity(artistResponse);
             artistRepository.save(artistEntity);
         }
-        
-        AlbumEntity newAlbum = albumMapper.requestToEntity(albumRequest);
-        newAlbum.setArtist(artistRepository.findBySpotifyId(albumRequest.getArtistSpotifyId())
+
+        AlbumEntity newAlbum = albumMapper.toEntity(albumResponse);
+        newAlbum.setArtist(artistRepository.findBySpotifyId(albumResponse.getArtistSpotifyId())
                 .orElseThrow(() -> new EntityNotFoundException("Artist not found")));
-        
+
         return albumRepository.save(newAlbum);
     }
     public Page<AlbumReviewResponse> findByAlbum(Long albumId, String spotifyId, Pageable pageable) {

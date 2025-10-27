@@ -18,6 +18,7 @@ public class EnviromentConfig {
             System.setProperty(entry.getKey(), entry.getValue());
         });
 
+        
         try {
             Objects.requireNonNull(System.getProperty("JWT_SECRET"), "JWT_SECRET no está definida en el .env");
             Objects.requireNonNull(System.getProperty("GOOGLE_CLIENT_ID"), "GOOGLE_CLIENT_ID no está definida en el .env");

@@ -1,16 +1,9 @@
 package com.musicspring.app.music_app.model.mapper;
 
-import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
-import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistWithAlbumsResponse;
 import com.musicspring.app.music_app.model.entity.ArtistEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ArtistMapper {
@@ -29,12 +22,12 @@ public class ArtistMapper {
         return artistEntityPage.map(this::toResponse);
     }
 
-    public ArtistEntity toEntity(ArtistRequest request) {
+    public ArtistEntity toEntity(ArtistResponse response) {
         return ArtistEntity.builder()
-                .spotifyId(request.getSpotifyId())
-                .name(request.getName())
-                .followers(request.getFollowers())
-                .imageUrl(request.getImageUrl())
+                .spotifyId(response.getSpotifyId())
+                .name(response.getName())
+                .followers(response.getFollowers())
+                .imageUrl(response.getImageUrl())
                 .build();
     }
 }

@@ -1,9 +1,10 @@
 package com.musicspring.app.music_app.spotify.controller;
 
-import com.musicspring.app.music_app.model.dto.request.AlbumRequest;
-import com.musicspring.app.music_app.model.dto.request.ArtistRequest;
+import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.exception.ErrorDetails;
-import com.musicspring.app.music_app.model.dto.request.SongRequest;
+import com.musicspring.app.music_app.model.dto.response.SongResponse;
+import com.musicspring.app.music_app.spotify.model.UnifiedSearchResponse;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,7 +63,7 @@ public class SpotifyController {
             )
     })
     @GetMapping("/search/songs")
-    public ResponseEntity<Page<SongRequest>> searchSongs(
+    public ResponseEntity<Page<SongResponse>> searchSongs(
             @Parameter(description = "Search query string", required = true, example = "Bohemian Rhapsody")
             @RequestParam String query,
             @Parameter(description = "Number of items per page", example = "20")
@@ -70,7 +71,7 @@ public class SpotifyController {
             @Parameter(description = "Page number to retrieve (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<SongRequest> songs = spotifyService.searchSongs(query, pageable);
+        Page<SongResponse> songs = spotifyService.searchSongs(query, pageable);
         return ResponseEntity.ok(songs);
     }
 
@@ -105,7 +106,7 @@ public class SpotifyController {
             )
     })
     @GetMapping("/search/artists")
-    public ResponseEntity<Page<ArtistRequest>> searchArtists(
+    public ResponseEntity<Page<ArtistResponse>> searchArtists(
             @Parameter(description = "Search query string", required = true, example = "Queen")
             @RequestParam String query,
             @Parameter(description = "Number of items per page", example = "20")
@@ -113,7 +114,7 @@ public class SpotifyController {
             @Parameter(description = "Page number to retrieve (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ArtistRequest> artists = spotifyService.searchArtists(query, pageable);
+        Page<ArtistResponse> artists = spotifyService.searchArtists(query, pageable);
         return ResponseEntity.ok(artists);
     }
 
@@ -148,7 +149,7 @@ public class SpotifyController {
             )
     })
     @GetMapping("/search/albums")
-    public ResponseEntity<Page<AlbumRequest>> searchAlbums(
+    public ResponseEntity<Page<AlbumResponse>> searchAlbums(
             @Parameter(description = "Search query string", required = true, example = "A Night at the Opera")
             @RequestParam String query,
             @Parameter(description = "Number of items per page", example = "20")
@@ -156,7 +157,7 @@ public class SpotifyController {
             @Parameter(description = "Page number to retrieve (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<AlbumRequest> albums = spotifyService.searchAlbums(query, pageable);
+        Page<AlbumResponse> albums = spotifyService.searchAlbums(query, pageable);
         return ResponseEntity.ok(albums);
     }
 
@@ -170,7 +171,7 @@ public class SpotifyController {
                     description = "Song retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = SongRequest.class)
+                            schema = @Schema(implementation = SongResponse.class)
                     )
             ),
             @ApiResponse(
@@ -191,10 +192,10 @@ public class SpotifyController {
             )
     })
     @GetMapping("/songs/{id}")
-    public ResponseEntity<SongRequest> getSong(
+    public ResponseEntity<SongResponse> getSong(
             @Parameter(description = "Spotify ID of the song to retrieve", required = true, example = "4u7EnebtmKWzUH433cf5Qv")
             @PathVariable String id) {
-        SongRequest song = spotifyService.getSong(id);
+        SongResponse song = spotifyService.getSong(id);
         return ResponseEntity.ok(song);
     }
 
@@ -208,7 +209,7 @@ public class SpotifyController {
                     description = "Artist retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ArtistRequest.class)
+                            schema = @Schema(implementation = ArtistResponse.class)
                     )
             ),
             @ApiResponse(
@@ -229,10 +230,10 @@ public class SpotifyController {
             )
     })
     @GetMapping("/artists/{id}")
-    public ResponseEntity<ArtistRequest> getArtist(
+    public ResponseEntity<ArtistResponse> getArtist(
             @Parameter(description = "Spotify ID of the artist to retrieve", required = true, example = "1dfeR4HaWDbWqFHLkxsg1d")
             @PathVariable String id) {
-        ArtistRequest artist = spotifyService.getArtist(id);
+        ArtistResponse artist = spotifyService.getArtist(id);
         return ResponseEntity.ok(artist);
     }
 
@@ -246,7 +247,7 @@ public class SpotifyController {
                     description = "Album retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = AlbumRequest.class)
+                            schema = @Schema(implementation = AlbumResponse.class)
                     )
             ),
             @ApiResponse(
@@ -267,10 +268,55 @@ public class SpotifyController {
             )
     })
     @GetMapping("/albums/{id}")
-    public ResponseEntity<AlbumRequest> getAlbum(
+    public ResponseEntity<AlbumResponse> getAlbum(
             @Parameter(description = "Spotify ID of the album to retrieve", required = true, example = "6i6folBtxKV28WX3msQ4FE")
             @PathVariable String id) {
-        AlbumRequest album = spotifyService.getAlbum(id);
+        AlbumResponse album = spotifyService.getAlbum(id);
         return ResponseEntity.ok(album);
+    }
+
+    @Operation(
+            summary = "Unified search in Spotify",
+            description = "Searches for songs, artists, and albums in Spotify with a single query, " +
+                    "returning grouped results from all three categories."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Search successful",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UnifiedSearchResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid search parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Server error or Spotify API error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @GetMapping("/unified-search")
+    public ResponseEntity<UnifiedSearchResponse> search(
+            @Parameter(description = "Text to search for in songs, artists and albums", required = true, example = "Bohemian Rhapsody")
+            @RequestParam String query,
+            @Parameter(description = "Page size for each category", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Page number (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        UnifiedSearchResponse results = spotifyService.searchAll(query, pageable);
+        return ResponseEntity.ok(results);
     }
 }
