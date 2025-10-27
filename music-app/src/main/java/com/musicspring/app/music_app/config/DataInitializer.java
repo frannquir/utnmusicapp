@@ -72,6 +72,13 @@ public class DataInitializer {
                     .build();
             permitRepository.save(permitWrite);
         }
+        if(!permitRepository.findByPermit(Permit.DELETE).isPresent()){
+            PermitEntity permitWrite = PermitEntity
+                    .builder()
+                    .permit(Permit.DELETE)
+                    .build();
+            permitRepository.save(permitWrite);
+        }
     }
 
     private void createRolesAndAssignPermissions() {
