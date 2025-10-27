@@ -46,18 +46,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**","/api/v1/users/auth/**", "/api/v1/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**","/api/v1/users/{id}/reactivate").permitAll()
+                        .requestMatchers("/api/v1/auth/**","/api/v1/users/auth/**", "/login**", "/api/v1/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**","/api/v1/users/{id}/reactivate").permitAll()
                         .anyRequest().authenticated())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .oidcUserService(customOAuth2UserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .authorizationEndpoint(authz ->
                                 authz.baseUri("/api/v1/oauth2/authorization")
                         )
+                        .failureUrl("http://localhost:4200/login?oauthError=true")
                 )
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

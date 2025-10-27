@@ -73,11 +73,11 @@ public class DataInitializer {
             permitRepository.save(permitWrite);
         }
         if(!permitRepository.findByPermit(Permit.DELETE).isPresent()){
-            PermitEntity permitWrite = PermitEntity
+            PermitEntity permitDelete = PermitEntity
                     .builder()
                     .permit(Permit.DELETE)
                     .build();
-            permitRepository.save(permitWrite);
+            permitRepository.save(permitDelete);
         }
     }
 
