@@ -11,9 +11,12 @@ import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.repository.UserRepository;
 import com.musicspring.app.music_app.security.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,19 +26,20 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * CustomOAuth2UserService handles OAuth2 user information processing.
- * This service extends Spring's DefaultOAuth2UserService to customize how OAuth2 user
+ * CustomOAuth2UserService handles OIDC user information processing (specifically for Google).
+ * This service extends Spring's DefaultOidcUserService to customize how OIDC user
  * information is processed and stored in the application database. It is responsible for:
- * 1. Loading user information from OAuth2 providers (Google, etc.)
- * 2. Mapping OAuth2 user attributes to application user entities
- * 3. Creating or updating user records based on OAuth2 data
- * 4. Assigning appropriate roles and permissions to OAuth2 users
+ * 1. Loading user information from OIDC providers (Google)
+ * 2. Mapping OIDC user attributes to application user entities
+ * 3. Creating or updating user records based on OIDC data
+ * 4. Assigning appropriate roles to OIDC users
  * 5. Maintaining provider-specific information (provider ID, profile pictures, etc.)
- * The service ensures that OAuth2 users are properly integrated into the application's
+ * The service ensures that OIDC users are properly integrated into the application's
  * user management and security system.
  */
 @Service
-public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+// Extend DefaultOidcUserService instead of DefaultOAuth2UserService
+public class CustomOAuth2UserService extends OidcUserService {
 
     private final CredentialRepository credentialRepository;
     private final UserRepository userRepository;
@@ -43,10 +47,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final JwtService jwtService;
 
     /**
+     * Constructor for dependency injection.
      * @param credentialRepository Repository for managing user credentials
      * @param userRepository       Repository for managing user entities
      * @param roleRepository       Repository for managing user roles
-     * @param jwtService           Repository for managing user tokens
+     * @param jwtService           Service for managing JWT tokens
      */
     @Autowired
     public CustomOAuth2UserService(CredentialRepository credentialRepository,
@@ -59,113 +64,155 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     /**
-     * Loads and processes OAuth2 user information.
-     * This method is called by Spring Security during the OAuth2 authentication flow.
-     * It delegates to the parent class to load basic OAuth2 user information, then
-     * processes that information to create or update application user records.
-     * @param userRequest OAuth2UserRequest containing access token and client registration
-     * @return CustomOAuth2User containing both OAuth2 attributes and application user data
+     * Loads the OIDC user and processes them.
+     * This method is called by Spring Security during the OIDC authentication flow.
+     * It delegates to the parent class to load basic OIDC user information, then
+     * processes that information using custom logic to create or update application
+     * user records and wrap the result in a CustomOAuth2User.
+     * @param userRequest OidcUserRequest containing access token, ID token, and client registration
+     * @return CustomOAuth2User containing OIDC attributes and application CredentialEntity data
      * @throws OAuth2AuthenticationException if user processing fails
      */
     @Override
-    @Transactional  // Ensures database operations are atomic
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // Load basic OAuth2 user information from provider
-        OAuth2User oauth2User = super.loadUser(userRequest);
+    @Transactional // Ensures database operations are atomic
+    public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+        // 1. Load the standard OIDC user information using the parent class method
+        OidcUser oidcUser = super.loadUser(userRequest);
 
-        // Process the OAuth2 user data and create/update application user
-        return processOAuth2User(oauth2User);
+        // 2. Process the OIDC user data using custom logic to find/create CredentialEntity
+        CredentialEntity credential = processOidcUser(oidcUser);
+
+        // 3. Return your custom wrapper which should implement OidcUser
+        // Ensure CustomOAuth2User's constructor accepts OidcIdToken and OidcUserInfo
+        // and that CustomOAuth2User implements the OidcUser interface.
+        return new CustomOAuth2User(oidcUser.getAttributes(), credential, oidcUser.getIdToken(), oidcUser.getUserInfo());
     }
 
     /**
-     * Processes OAuth2 user data and manages application user records.
-     * This method extracts user information from OAuth2 provider attributes,
-     * then creates or updates the corresponding application user records.
-     * It handles both new user registration and existing user updates.
-     * @param oauth2User OAuth2User containing provider attributes
-     * @return CustomOAuth2User wrapping both OAuth2 data and application credentials
+     * Processes OIDC user data and manages application user records.
+     * Extracts user information from OIDC attributes (email, sub, name, picture),
+     * then finds an existing CredentialEntity or creates a new one.
+     * Handles both new user registration and existing user updates via OIDC.
+     * @param oidcUser OidcUser containing standard OIDC claims and attributes
+     * @return CredentialEntity representing the persisted application user credentials
      */
-    private OAuth2User processOAuth2User(OAuth2User oauth2User) {
-        // Extract user information from OAuth2 provider attributes
-        String email = oauth2User.getAttribute("email");           // Email address (required)
-        String googleId = oauth2User.getAttribute("sub");          // Google's unique user identifier
-        String name = oauth2User.getAttribute("name");             // Display name
-        String pictureUrl = oauth2User.getAttribute("picture");    // Profile picture URL
+    private CredentialEntity processOidcUser(OidcUser oidcUser) {
+        // Extract standard OIDC user information
+        String email = oidcUser.getEmail();               // Email address (required)
+        String googleId = oidcUser.getSubject();          // Google's unique user identifier ('sub' claim)
+        String name = oidcUser.getFullName();             // Display name ('name' claim)
+        String pictureUrl = oidcUser.getPicture();        // Profile picture URL ('picture' claim)
 
-        // Find existing user credential by email
-        Optional<CredentialEntity> credentialOptional = credentialRepository.findByEmail(email);
+        // Email is essential for linking accounts
+        if (email == null) {
+            // Handle cases where email might be missing (though unlikely for Google)
+            throw new OAuth2AuthenticationException("Email not found in OIDC response");
+        }
+
+        // Find existing user credential by email (case-insensitive recommended)
+        Optional<CredentialEntity> credentialOptional = credentialRepository.findByEmailOrUsername(email);
         CredentialEntity credential;
 
         if (credentialOptional.isPresent()) {
-            // Update existing user with latest OAuth2 information
+            // User exists - update their info
             credential = credentialOptional.get();
-            credential.setProvider(AuthProvider.GOOGLE);       // Ensure provider is set correctly
-            credential.setProviderId(googleId);                // Update provider ID
-            credential.setProfilePictureUrl(pictureUrl);       // Update profile picture
+
+            // If user previously logged in locally, update provider
+            if (credential.getProvider() == AuthProvider.LOCAL) {
+                credential.setProvider(AuthProvider.GOOGLE);
+            }
+            // Always update providerId and pictureUrl with latest info from Google
+            credential.setProviderId(googleId);
+            credential.setProfilePictureUrl(pictureUrl);
+
+            // Generate refresh token if it's missing (e.g., first OAuth login for existing user)
             if (credential.getRefreshToken() == null) {
                 String refreshToken = jwtService.generateRefreshToken(credential);
                 credential.setRefreshToken(refreshToken);
             }
+            // Save potential updates
+            credential = credentialRepository.save(credential);
         } else {
-            // Create new user account from OAuth2 data
-            credential = createNewOAuth2User(email, googleId, name, pictureUrl);
+            // User does not exist - create a new account
+            credential = createNewOidcUser(email, googleId, name, pictureUrl);
+            // The createNewOidcUser method already saves the new credential
         }
 
-        // Save updated credential information
-        credentialRepository.save(credential);
-
-        // Return custom OAuth2 user containing both provider data and application credentials
-        return new CustomOAuth2User(oauth2User.getAttributes(), credential);
+        return credential; // Return the persisted CredentialEntity
     }
 
     /**
-     * Creates a new OAuth2 user account.
-     * This method creates both UserEntity and CredentialEntity records for a new OAuth2 user.
-     * It assigns default roles and sets up the user with appropriate permissions.
-     * @param email      User's email address from OAuth2 provider
-     * @param googleId   Google's unique identifier for the user
-     * @param name       User's display name from OAuth2 provider
-     * @param pictureUrl URL to user's profile picture
-     * @return CredentialEntity for the newly created user
+     * Creates a new user account based on OIDC information.
+     * Creates both UserEntity and CredentialEntity records, assigns default roles,
+     * and generates a refresh token.
+     * @param email      User's email address from OIDC provider
+     * @param googleId   Google's unique identifier ('sub') for the user
+     * @param name       User's display name from OIDC provider
+     * @param pictureUrl URL to user's profile picture from OIDC provider
+     * @return CredentialEntity for the newly created and persisted user
      */
-    private CredentialEntity createNewOAuth2User(String email, String googleId, String name, String pictureUrl) {
-        // Create main user entity with basic information
-        UserEntity user = UserEntity.builder()
-                .username(name)
-                .active(true)                                // New OAuth2 users are active by default
-                .build();
+    private CredentialEntity createNewOidcUser(String email, String googleId, String name, String pictureUrl) {
+        // Generate a unique username if the provided name is taken or null
+        String baseUsername = name != null && !name.trim().isEmpty() ? name : email.split("@")[0];
+        String uniqueUsername = generateUniqueUsername(baseUsername);
 
-        // Save user entity to generate database ID
+        // Create the main user entity
+        UserEntity user = UserEntity.builder()
+                .username(uniqueUsername) // Use the generated unique username
+                .active(true)             // New OIDC users are active by default
+                .build();
+        // Save user first to get the ID
         user = userRepository.save(user);
 
-        // Create credential entity with OAuth2 provider information and proper roles
+        // Create the credential entity linked to the user
         CredentialEntity credential = CredentialEntity.builder()
-                .email(email)                        // Store email for identification
-                .provider(AuthProvider.GOOGLE)       // Set OAuth2 provider
-                .providerId(googleId)                // Store provider's unique user ID
+                .email(email)                        // Store email
+                .provider(AuthProvider.GOOGLE)       // Set provider to GOOGLE
+                .providerId(googleId)                // Store Google's unique ID
                 .profilePictureUrl(pictureUrl)       // Store profile picture URL
-                .user(user)                          // Link to user entity
-                .roles(getDefaultRoles())
+                .user(user)                          // Link to the UserEntity
+                .roles(getDefaultRoles())            // Assign default roles (e.g., ROLE_USER)
                 .build();
 
+        // Generate and set the refresh token
         String refreshToken = jwtService.generateRefreshToken(credential);
         credential.setRefreshToken(refreshToken);
 
-        return credential;
+        // Save and return the newly created credential
+        return credentialRepository.save(credential);
     }
 
     /**
-     * Retrieves default roles for new OAuth2 users.
-     * @return Set of RoleEntity objects representing default user permissions
+     * Retrieves default roles (ROLE_USER) for new users.
+     * @return A Set containing the default RoleEntity.
      */
     private Set<RoleEntity> getDefaultRoles() {
         Set<RoleEntity> roles = new HashSet<>();
-
-        // Find and assign the standard USER role
-        // This provides basic application access permissions
         roleRepository.findByRole(Role.ROLE_USER)
-                .ifPresent(roles::add);
-
+                // Add the role to the set if found, otherwise throw an exception
+                .ifPresentOrElse(roles::add,
+                        () -> { throw new RuntimeException("Default role ROLE_USER not found in database during OAuth2 user creation."); }
+                );
         return roles;
+    }
+
+    /**
+     * Generates a unique username by appending numbers if the base username already exists.
+     * @param baseUsername The desired base username (e.g., from user's name or email prefix)
+     * @return A unique username guaranteed not to exist in the database.
+     */
+    private String generateUniqueUsername(String baseUsername) {
+        String username = baseUsername.replaceAll("[^a-zA-Z0-9.-]", "_"); // Sanitize username slightly
+        int counter = 1;
+        // Keep appending numbers until a unique username is found
+        while (userRepository.findByUsername(username).isPresent()) { // Assumes findByUsername exists
+            username = baseUsername + counter;
+            counter++;
+            // Optional: Add a limit to prevent infinite loops in extreme edge cases
+            if (counter > 100) {
+                throw new RuntimeException("Could not generate a unique username for: " + baseUsername);
+            }
+        }
+        return username;
     }
 }
