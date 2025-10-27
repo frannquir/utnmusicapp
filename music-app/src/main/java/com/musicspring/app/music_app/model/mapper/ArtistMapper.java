@@ -15,6 +15,7 @@ public class ArtistMapper {
                 .name(entity.getName())
                 .followers(entity.getFollowers())
                 .imageUrl(entity.getImageUrl())
+                .spotifyLink(entity.getSpotifyLink())
                 .build();
     }
 
@@ -28,6 +29,7 @@ public class ArtistMapper {
                 .name(response.getName())
                 .followers(response.getFollowers())
                 .imageUrl(response.getImageUrl())
+                .spotifyLink(response.getSpotifyLink())
                 .build();
     }
 }

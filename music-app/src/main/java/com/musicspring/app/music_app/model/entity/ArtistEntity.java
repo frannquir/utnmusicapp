@@ -29,6 +29,9 @@ public class ArtistEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "spotify_link")
+    private String spotifyLink;
+
     @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY)
     private List<AlbumEntity> albums;
 }

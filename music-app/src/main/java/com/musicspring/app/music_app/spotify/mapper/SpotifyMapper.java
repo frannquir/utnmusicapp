@@ -67,6 +67,7 @@ public class SpotifyMapper {
         artistResponse.setArtistId(null);
         artistResponse.setSpotifyId(spotifyArtist.getId());
         artistResponse.setName(spotifyArtist.getName());
+        artistResponse.setSpotifyLink(spotifyArtist.getExternalUrls().get("spotify"));
         artistResponse.setFollowers(spotifyArtist.getFollowers().getTotal());
 
         Image[] images = spotifyArtist.getImages();
