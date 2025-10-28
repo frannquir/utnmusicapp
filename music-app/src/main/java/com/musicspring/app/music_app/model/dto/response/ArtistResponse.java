@@ -12,5 +12,6 @@ public class ArtistResponse {
     private String spotifyId;
     private String name;
     private Integer followers;
+    private String spotifyLink;
     private String imageUrl;
 }

@@ -33,6 +33,10 @@ public class ArtistRequest {
     @Size(max = 255, message = "Image URL must be at most 255 characters.")
     private String imageUrl;
 
+    @Size(max = 255, message = "Spotify link must be at most 255 characters.")
+    @Schema(description = "Full Spotify link to the artist", example = "https://open.spotify.com/artist/0TnOYISbd1XYRBk9myaseg")
+    private String spotifyLink;
+
     @Size(max = 100, min = 1, message = "Limit must be between 1 and 100. ")
     @Schema(description = "Maximum number of results to return", example = "10")
     private Integer limit;
