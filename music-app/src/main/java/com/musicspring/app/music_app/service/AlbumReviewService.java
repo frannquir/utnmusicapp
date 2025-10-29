@@ -1,10 +1,7 @@
 package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.request.*;
-import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
-import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistWithAlbumsResponse;
+import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
@@ -149,7 +146,7 @@ public class AlbumReviewService {
     }
 
     private AlbumEntity createAlbumFromSpotify(String spotifyId) {
-        AlbumResponse albumResponse = spotifyService.getAlbum(spotifyId);
+        AlbumWithTracksResponse albumResponse = spotifyService.getAlbum(spotifyId); //aca hay error, ya que pide un albumResponse y tiene un AlbumWithTracksResponse
 
         if (artistRepository.findBySpotifyId(albumResponse.getArtistSpotifyId()).isEmpty()) {
             ArtistWithAlbumsResponse artistResponse = spotifyService.getArtist(albumResponse.getArtistSpotifyId());
@@ -157,7 +154,7 @@ public class AlbumReviewService {
             artistRepository.save(artistEntity);
         }
 
-        AlbumEntity newAlbum = albumMapper.toEntity(albumResponse);
+        AlbumEntity newAlbum = albumMapper.withTracksToEntity(albumResponse);
         newAlbum.setArtist(artistRepository.findBySpotifyId(albumResponse.getArtistSpotifyId())
                 .orElseThrow(() -> new EntityNotFoundException("Artist not found")));
 

@@ -163,8 +163,8 @@ public class SongReviewService {
         }
 
         if (albumRepository.findBySpotifyId(songResponse.getAlbumSpotifyId()).isEmpty()) {
-            AlbumResponse albumResponse = spotifyService.getAlbum(songResponse.getAlbumSpotifyId());
-            AlbumEntity albumEntity = albumMapper.toEntity(albumResponse);
+            AlbumWithTracksResponse albumResponse = spotifyService.getAlbum(songResponse.getAlbumSpotifyId());
+            AlbumEntity albumEntity = albumMapper.withTracksToEntity(albumResponse);
             albumEntity.setArtist(artistRepository.findBySpotifyId(songResponse.getArtistSpotifyId())
                     .orElseThrow(() -> new EntityNotFoundException("Artist not found")));
             albumRepository.save(albumEntity);

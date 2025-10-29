@@ -1,11 +1,14 @@
 package com.musicspring.app.music_app.model.mapper;
 
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
+import com.musicspring.app.music_app.model.dto.response.AlbumWithTracksResponse;
 import com.musicspring.app.music_app.model.entity.AlbumEntity;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.data.domain.Page;
+import se.michaelthelin.spotify.model_objects.specification.Album;
+
 import java.util.List;
 
 @Component
@@ -39,6 +42,16 @@ public class AlbumMapper {
     }
 
     public AlbumEntity toEntity (AlbumResponse albumResponse){
+        return AlbumEntity.builder()
+                .spotifyId(albumResponse.getSpotifyId())
+                .title(albumResponse.getTitle())
+                .imageUrl(albumResponse.getImageUrl())
+                .spotifyLink(albumResponse.getSpotifyLink())
+                .releaseDate(albumResponse.getReleaseDate())
+                .build();
+    }
+
+    public AlbumEntity withTracksToEntity (AlbumWithTracksResponse albumResponse){
         return AlbumEntity.builder()
                 .spotifyId(albumResponse.getSpotifyId())
                 .title(albumResponse.getTitle())
