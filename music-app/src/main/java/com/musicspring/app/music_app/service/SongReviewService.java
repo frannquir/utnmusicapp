@@ -1,10 +1,7 @@
 package com.musicspring.app.music_app.service;
 
 import com.musicspring.app.music_app.model.dto.request.*;
-import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
-import com.musicspring.app.music_app.model.dto.response.SongResponse;
-import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
+import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.ArtistMapper;
@@ -159,14 +156,15 @@ public class SongReviewService {
         SongResponse songResponse = spotifyService.getSong(spotifyId);
 
         if (artistRepository.findBySpotifyId(songResponse.getArtistSpotifyId()).isEmpty()) {
-            ArtistResponse artistResponse = spotifyService.getArtist(songResponse.getArtistSpotifyId());
-            ArtistEntity artistEntity = artistMapper.toEntity(artistResponse);
+//            ArtistResponse artistResponse = spotifyService.getArtist(songResponse.getArtistSpotifyId());
+            ArtistWithAlbumsResponse artistResponse = spotifyService.getArtist(songResponse.getArtistSpotifyId());
+            ArtistEntity artistEntity = artistMapper.withAlbumstoEntity(artistResponse);
             artistRepository.save(artistEntity);
         }
 
         if (albumRepository.findBySpotifyId(songResponse.getAlbumSpotifyId()).isEmpty()) {
-            AlbumResponse albumResponse = spotifyService.getAlbum(songResponse.getAlbumSpotifyId());
-            AlbumEntity albumEntity = albumMapper.toEntity(albumResponse);
+            AlbumWithTracksResponse albumResponse = spotifyService.getAlbum(songResponse.getAlbumSpotifyId());
+            AlbumEntity albumEntity = albumMapper.withTracksToEntity(albumResponse);
             albumEntity.setArtist(artistRepository.findBySpotifyId(songResponse.getArtistSpotifyId())
                     .orElseThrow(() -> new EntityNotFoundException("Artist not found")));
             albumRepository.save(albumEntity);

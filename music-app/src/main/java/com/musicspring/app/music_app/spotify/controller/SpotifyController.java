@@ -1,9 +1,7 @@
 package com.musicspring.app.music_app.spotify.controller;
 
-import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
-import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
+import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.exception.ErrorDetails;
-import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.spotify.model.UnifiedSearchResponse;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -209,7 +207,7 @@ public class SpotifyController {
                     description = "Artist retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ArtistResponse.class)
+                            schema = @Schema(implementation = ArtistWithAlbumsResponse.class)
                     )
             ),
             @ApiResponse(
@@ -230,15 +228,15 @@ public class SpotifyController {
             )
     })
     @GetMapping("/artists/{id}")
-    public ResponseEntity<ArtistResponse> getArtist(
+    public ResponseEntity<ArtistWithAlbumsResponse> getArtist(
             @Parameter(description = "Spotify ID of the artist to retrieve", required = true, example = "1dfeR4HaWDbWqFHLkxsg1d")
             @PathVariable String id) {
-        ArtistResponse artist = spotifyService.getArtist(id);
+        ArtistWithAlbumsResponse artist = spotifyService.getArtist(id);
         return ResponseEntity.ok(artist);
     }
 
     @Operation(
-            summary = "Get a specific album from Spotify",
+            summary = "Get a specific album from Spotify with its tracks",
             description = "Retrieves detailed information about an album identified by its Spotify ID."
     )
     @ApiResponses(value = {
@@ -247,7 +245,7 @@ public class SpotifyController {
                     description = "Album retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = AlbumResponse.class)
+                            schema = @Schema(implementation = AlbumWithTracksResponse.class)
                     )
             ),
             @ApiResponse(
@@ -268,10 +266,10 @@ public class SpotifyController {
             )
     })
     @GetMapping("/albums/{id}")
-    public ResponseEntity<AlbumResponse> getAlbum(
+    public ResponseEntity<AlbumWithTracksResponse> getAlbum(
             @Parameter(description = "Spotify ID of the album to retrieve", required = true, example = "6i6folBtxKV28WX3msQ4FE")
             @PathVariable String id) {
-        AlbumResponse album = spotifyService.getAlbum(id);
+        AlbumWithTracksResponse album = spotifyService.getAlbum(id);
         return ResponseEntity.ok(album);
     }
 
