@@ -9,8 +9,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArtistWithAlbumsResponse {
+    private String spotifyId;
     private Long artistId;
     private String name;
+    private String spotifyLink;
     private Integer followers;
     private String imageUrl;
     private List<AlbumResponse> albums;

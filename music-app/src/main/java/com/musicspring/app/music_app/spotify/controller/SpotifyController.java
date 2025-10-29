@@ -3,6 +3,7 @@ package com.musicspring.app.music_app.spotify.controller;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.exception.ErrorDetails;
+import com.musicspring.app.music_app.model.dto.response.ArtistWithAlbumsResponse;
 import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.spotify.model.UnifiedSearchResponse;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
@@ -230,10 +231,10 @@ public class SpotifyController {
             )
     })
     @GetMapping("/artists/{id}")
-    public ResponseEntity<ArtistResponse> getArtist(
+    public ResponseEntity<ArtistWithAlbumsResponse> getArtist(
             @Parameter(description = "Spotify ID of the artist to retrieve", required = true, example = "1dfeR4HaWDbWqFHLkxsg1d")
             @PathVariable String id) {
-        ArtistResponse artist = spotifyService.getArtist(id);
+        ArtistWithAlbumsResponse artist = spotifyService.getArtist(id);
         return ResponseEntity.ok(artist);
     }
 

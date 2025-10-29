@@ -4,6 +4,7 @@ import com.musicspring.app.music_app.model.dto.request.*;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
+import com.musicspring.app.music_app.model.dto.response.ArtistWithAlbumsResponse;
 import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
@@ -151,8 +152,8 @@ public class AlbumReviewService {
         AlbumResponse albumResponse = spotifyService.getAlbum(spotifyId);
 
         if (artistRepository.findBySpotifyId(albumResponse.getArtistSpotifyId()).isEmpty()) {
-            ArtistResponse artistResponse = spotifyService.getArtist(albumResponse.getArtistSpotifyId());
-            ArtistEntity artistEntity = artistMapper.toEntity(artistResponse);
+            ArtistWithAlbumsResponse artistResponse = spotifyService.getArtist(albumResponse.getArtistSpotifyId());
+            ArtistEntity artistEntity = artistMapper.withAlbumstoEntity(artistResponse);
             artistRepository.save(artistEntity);
         }
 
