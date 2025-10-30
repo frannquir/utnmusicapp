@@ -94,4 +94,6 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.FORBIDDEN)
                 .body(ErrorDetails.from(ex.getMessage(), request.getDescription(false)));
     }
+
+
 }

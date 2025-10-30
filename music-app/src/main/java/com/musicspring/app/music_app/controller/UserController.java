@@ -3,6 +3,8 @@ package com.musicspring.app.music_app.controller;
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.UserUpdateRequest;
 import com.musicspring.app.music_app.model.dto.response.*;
+import com.musicspring.app.music_app.security.dto.AuthResponse;
+import com.musicspring.app.music_app.security.dto.CompleteProfileRequest;
 import com.musicspring.app.music_app.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -368,5 +371,42 @@ public class UserController {
             @Parameter(description = "User profile update data")
             @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.updateUserProfile(id, request));
+    }
+
+    @Operation(
+            summary = "Complete a new user's profile",
+            description = "Sets the username for a newly registered user (e.g., via OAuth) who has an incomplete profile. Requires ROLE_INCOMPLETE_PROFILE."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Profile completed successfully. Returns a new AuthResponse with updated roles.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))
+            ),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid username (e.g., already taken, invalid format)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "User is not authenticated.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "403",
+                    description = "User does not have permission (e.g., profile already complete)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            )
+    })
+    @PostMapping("/complete-profile")
+    public ResponseEntity<AuthResponse> completeProfile(
+            @Parameter(description = "Request containing the new username", required = true)
+            @Valid @RequestBody CompleteProfileRequest request,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("User is not authenticated");
+        }
+        String authenticatedUserEmail = authentication.getName();
+        AuthResponse authResponse = userService.completeOAuthProfile(request, authenticatedUserEmail);
+
+        return ResponseEntity.ok(authResponse);
     }
 }

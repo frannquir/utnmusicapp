@@ -6,10 +6,17 @@ import com.musicspring.app.music_app.model.entity.*;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
 import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.model.mapper.SongReviewMapper;
+import com.musicspring.app.music_app.security.dto.AuthResponse;
+import com.musicspring.app.music_app.security.dto.CompleteProfileRequest;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
+import com.musicspring.app.music_app.security.entity.RoleEntity;
+import com.musicspring.app.music_app.security.enums.Role;
+import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
+import com.musicspring.app.music_app.security.repository.RoleRepository;
 import com.musicspring.app.music_app.security.service.AuthService;
+import com.musicspring.app.music_app.security.service.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,6 +44,9 @@ public class UserService {
     private final CommentRepository commentRepository;
     private final ReactionRepository reactionRepository;
     private final StatisticService statisticService;
+    private final JwtService jwtService;
+    private final AuthMapper authMapper;
+    private final RoleRepository roleRepository;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -46,7 +56,13 @@ public class UserService {
                        AlbumReviewRepository albumReviewRepository,
                        SongReviewRepository songReviewRepository,
                        AlbumReviewMapper albumReviewMapper,
-                       SongReviewMapper songReviewMapper, CommentRepository commentRepository, ReactionRepository reactionRepository, StatisticService statisticService) {
+                       SongReviewMapper songReviewMapper,
+                       CommentRepository commentRepository,
+                       ReactionRepository reactionRepository,
+                       StatisticService statisticService,
+                       JwtService jwtService,
+                       AuthMapper authMapper,
+                       RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.credentialRepository = credentialRepository;
@@ -58,6 +74,9 @@ public class UserService {
         this.commentRepository = commentRepository;
         this.reactionRepository = reactionRepository;
         this.statisticService = statisticService;
+        this.jwtService = jwtService;
+        this.authMapper = authMapper;
+        this.roleRepository = roleRepository;
     }
 
 
@@ -145,8 +164,6 @@ public class UserService {
 
         CredentialEntity credential = existingUser.getCredential();
 
-        if (updateRequest.getProfilePictureUrl() != null)
-            credential.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
 
         if (updateRequest.getActive() != null)
             existingUser.setActive(updateRequest.getActive());
@@ -179,10 +196,6 @@ public class UserService {
         CredentialEntity credential = user.getCredential();
 
         if (credential != null) {
-            if (profileRequest.getProfilePictureUrl() != null) {
-                credential.setProfilePictureUrl(profileRequest.getProfilePictureUrl());
-            }
-
             if (profileRequest.getBiography() != null) {
                 credential.setBiography(profileRequest.getBiography());
             }
@@ -237,9 +250,6 @@ public class UserService {
         if (request.getUsername() != null) {
             user.setUsername(request.getUsername());
         }
-        if (request.getProfilePictureUrl() != null && user.getCredential() != null) {
-            user.getCredential().setProfilePictureUrl(request.getProfilePictureUrl());
-        }
         if (request.getActive() != null) {
             user.setActive(request.getActive());
         }
@@ -250,5 +260,44 @@ public class UserService {
         userRepository.save(user);
 
         return userMapper.toUserProfileResponse(user);
+    }
+
+    @Transactional
+    public AuthResponse completeOAuthProfile(CompleteProfileRequest request, String authenticatedUserEmail) {
+
+        String newUsername = request.username().trim();
+        if (newUsername.length() < 3 || newUsername.length() > 50) {
+            throw new IllegalArgumentException("Username must be between 3 and 50 characters");
+        }
+
+        CredentialEntity credential = credentialRepository.findByEmailIgnoreCase(authenticatedUserEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Authenticated user not found"));
+
+        UserEntity user = credential.getUser();
+
+        boolean isIncomplete = credential.getRoles().stream()
+                .anyMatch(role -> role.getRole() == Role.ROLE_INCOMPLETE_PROFILE);
+
+        if (!isIncomplete) {
+            throw new IllegalStateException("Profile is already complete.");
+        }
+
+        if (userRepository.existsByUsernameIgnoreCase(newUsername)) {
+            throw new IllegalArgumentException("Username already taken: " + newUsername);
+        }
+
+        user.setUsername(newUsername);
+        userRepository.save(user);
+
+        RoleEntity userRole = roleRepository.findByRole(Role.ROLE_USER)
+                .orElseThrow(() -> new EntityNotFoundException("Role ROLE_USER not found."));
+
+        credential.getRoles().clear();
+        credential.getRoles().add(userRole);
+        credentialRepository.save(credential);
+
+        String newToken = jwtService.generateToken(credential);
+
+        return authMapper.toAuthResponse(credential, newToken);
     }
 }

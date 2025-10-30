@@ -79,6 +79,7 @@ public class DataInitializer {
                     .build();
             permitRepository.save(permitDelete);
         }
+
     }
 
     private void createRolesAndAssignPermissions() {
@@ -121,6 +122,21 @@ public class DataInitializer {
             adminRole.getPermits().add(deletePermit);
         }
         roleRepository.save(adminRole);
+
+        RoleEntity incompleteRole = roleRepository.findByRole(Role.ROLE_INCOMPLETE_PROFILE)
+                .orElseGet(() -> {
+                    RoleEntity newRole = RoleEntity.builder()
+                            .role(Role.ROLE_INCOMPLETE_PROFILE)
+                            .permits(new ArrayList<>(List.of(readPermit)))
+                            .build();
+                    return newRole;
+                });
+
+        if (incompleteRole.getId() != null) {
+            incompleteRole.getPermits().clear();
+            incompleteRole.getPermits().add(readPermit);
+        }
+        roleRepository.save(incompleteRole);
     }
 
     private void createAdminUserIfNotExists() {
