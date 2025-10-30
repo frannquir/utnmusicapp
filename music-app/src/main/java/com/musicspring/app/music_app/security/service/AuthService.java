@@ -104,19 +104,21 @@ public class AuthService {
     @Transactional
     public AuthResponse registerUserWithEmail(SignupRequest signupRequest) {
 
-        if (credentialsRepository.findByEmail(signupRequest.getEmail()).isPresent())
+        String normalizedEmail = signupRequest.getEmail().toLowerCase();
+
+        if (credentialsRepository.findByEmailIgnoreCase(normalizedEmail).isPresent())
             throw new IllegalArgumentException("User already exists with email: " + signupRequest.getEmail());
 
-        if (userRepository.existsByUsername(signupRequest.getUsername()))
+        if (userRepository.existsByUsernameIgnoreCase(signupRequest.getUsername()))
             throw new IllegalArgumentException("Username already taken: " + signupRequest.getUsername());
 
         UserEntity user = userMapper.toUserEntity(signupRequest);
-
 
         user = userRepository.save(user);
 
         CredentialEntity credential = credentialMapper.toCredentialEntity(signupRequest, user);
 
+        credential.setEmail(normalizedEmail);
         credential.setPassword(passwordEncoder.encode(credential.getPassword()));
         credential.setRoles(Set.of(roleRepository
                 .findByRole(Role.ROLE_USER)
