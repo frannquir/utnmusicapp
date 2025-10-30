@@ -31,6 +31,8 @@ public class SongResponse {
 
     private String previewUrl;
 
+    private Boolean explicit;
+
     private String spotifyLink;
 
     private LocalDate releaseDate;
