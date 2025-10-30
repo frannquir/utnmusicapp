@@ -24,6 +24,8 @@ public class SpotifyMapper {
         songResponse.setSpotifyId(spotifyTrack.getId());
         songResponse.setName(spotifyTrack.getName());
         songResponse.setDurationMs(spotifyTrack.getDurationMs());
+        songResponse.setExplicit(spotifyTrack.getIsExplicit());
+        songResponse.setPreviewUrl(spotifyTrack.getPreviewUrl());
 
         if (spotifyTrack.getExternalUrls() != null) {
             songResponse.setSpotifyLink(spotifyTrack.getExternalUrls().get("spotify"));
@@ -63,22 +65,20 @@ public class SpotifyMapper {
             return null;
         }
 
-        // Construye la respuesta usando la info del TrackSimplified y la info del álbum pasada
         return SongResponse.builder()
                 .songId(null) // No hay ID de BD aquí
                 .spotifyId(trackSimplified.getId())
                 .name(trackSimplified.getName())
                 .durationMs(trackSimplified.getDurationMs())
+                .explicit(trackSimplified.getIsExplicit())
                 .previewUrl(trackSimplified.getPreviewUrl())
                 .spotifyLink(trackSimplified.getExternalUrls() != null ? trackSimplified.getExternalUrls().get("spotify") : null)
-                // Usar info del artista del trackSimplified si está disponible, sino la del álbum
                 .artistName(trackSimplified.getArtists() != null && trackSimplified.getArtists().length > 0 ? trackSimplified.getArtists()[0].getName() : artistName)
                 .artistSpotifyId(trackSimplified.getArtists() != null && trackSimplified.getArtists().length > 0 ? trackSimplified.getArtists()[0].getId() : artistSpotifyId)
-                // Usa la info del álbum pasada como argumento
                 .albumName(albumName)
                 .albumSpotifyId(albumSpotifyId)
-                .imageUrl(imageUrl) // Usa la imagen del álbum pasada
-                .releaseDate(releaseDate) // Usa la fecha del álbum pasada
+                .imageUrl(imageUrl)
+                .releaseDate(releaseDate)
                 .build();
     }
 
