@@ -42,8 +42,6 @@ public class UserMapper {
                 .username(user.getUsername())
                 .joinDate(user.getCreatedAt().toLocalDate().toString())
                 .biography(credential != null ? credential.getBiography() : null)
-                .profilePictureUrl(credential != null ? credential.getProfilePictureUrl() : null)
-
                 .roles(roleNames)
                 .permissions(permissionNames)
 

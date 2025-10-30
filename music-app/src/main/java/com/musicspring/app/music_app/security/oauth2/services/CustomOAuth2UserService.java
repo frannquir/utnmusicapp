@@ -89,96 +89,81 @@ public class CustomOAuth2UserService extends OidcUserService {
     }
 
     /**
-     * Processes OIDC user data and manages application user records.
-     * Extracts user information from OIDC attributes (email, sub, name, picture),
-     * then finds an existing CredentialEntity or creates a new one.
-     * Handles both new user registration and existing user updates via OIDC.
-     * @param oidcUser OidcUser containing standard OIDC claims and attributes
-     * @return CredentialEntity representing the persisted application user credentials
+     * Processes OIDC user data (email, googleId) and manages application user records.
+     * Finds an existing CredentialEntity or creates a new one with an INCOMPLETE profile status.
+     *
+     * @param oidcUser OidcUser containing standard OIDC claims and attributes (email, sub).
+     * @return CredentialEntity representing the persisted application user (either complete or incomplete).
      */
     private CredentialEntity processOidcUser(OidcUser oidcUser) {
-        // Extract standard OIDC user information
-        String email = oidcUser.getEmail();               // Email address (required)
-        String googleId = oidcUser.getSubject();          // Google's unique user identifier ('sub' claim)
-        String name = oidcUser.getFullName();             // Display name ('name' claim)
-        String pictureUrl = oidcUser.getPicture();        // Profile picture URL ('picture' claim)
+        String email = oidcUser.getEmail();
+        String googleId = oidcUser.getSubject();
 
-        // Email is essential for linking accounts
-        if (email == null) {
-            // Handle cases where email might be missing (though unlikely for Google)
+        if (email == null || email.isBlank()) {
             throw new OAuth2AuthenticationException("Email not found in OIDC response");
         }
 
-        // Find existing user credential by email (case-insensitive recommended)
-        Optional<CredentialEntity> credentialOptional = credentialRepository.findByEmailOrUsername(email);
+        String normalizedEmail = email.toLowerCase();
+
+        Optional<CredentialEntity> credentialOptional = credentialRepository.findByEmailIgnoreCase(normalizedEmail);
         CredentialEntity credential;
 
         if (credentialOptional.isPresent()) {
-            // User exists - update their info
             credential = credentialOptional.get();
 
-            // If user previously logged in locally, update provider
             if (credential.getProvider() == AuthProvider.LOCAL) {
                 credential.setProvider(AuthProvider.GOOGLE);
             }
-            // Always update providerId and pictureUrl with latest info from Google
-            credential.setProviderId(googleId);
-            credential.setProfilePictureUrl(pictureUrl);
 
-            // Generate refresh token if it's missing (e.g., first OAuth login for existing user)
+            credential.setProviderId(googleId);
+
             if (credential.getRefreshToken() == null) {
                 String refreshToken = jwtService.generateRefreshToken(credential);
                 credential.setRefreshToken(refreshToken);
             }
-            // Save potential updates
+
             credential = credentialRepository.save(credential);
+
         } else {
-            // User does not exist - create a new account
-            credential = createNewOidcUser(email, googleId, name, pictureUrl);
-            // The createNewOidcUser method already saves the new credential
+            credential = createNewOidcUser(normalizedEmail, googleId);
         }
 
-        return credential; // Return the persisted CredentialEntity
+        return credential;
     }
 
     /**
-     * Creates a new user account based on OIDC information.
-     * Creates both UserEntity and CredentialEntity records, assigns default roles,
-     * and generates a refresh token.
-     * @param email      User's email address from OIDC provider
-     * @param googleId   Google's unique identifier ('sub') for the user
-     * @param name       User's display name from OIDC provider
-     * @param pictureUrl URL to user's profile picture from OIDC provider
-     * @return CredentialEntity for the newly created and persisted user
+     * Creates a new, incomplete user account for an OIDC login.
+     * Sets a temporary username and assigns ROLE_INCOMPLETE_PROFILE.
+     *
+     * @param email     User's normalized (lowercase) email address.
+     * @param googleId   Google's unique identifier ('sub') for the user.
+     * @return CredentialEntity for the newly created and persisted user.
      */
-    private CredentialEntity createNewOidcUser(String email, String googleId, String name, String pictureUrl) {
-        // Generate a unique username if the provided name is taken or null
-        String baseUsername = name != null && !name.trim().isEmpty() ? name : email.split("@")[0];
-        String uniqueUsername = generateUniqueUsername(baseUsername);
+    private CredentialEntity createNewOidcUser(String email, String googleId) {
 
-        // Create the main user entity
+        String tempUsername = "_google_" + googleId;
+
         UserEntity user = UserEntity.builder()
-                .username(uniqueUsername) // Use the generated unique username
-                .active(true)             // New OIDC users are active by default
+                .username(tempUsername)
+                .active(true)
                 .build();
-        // Save user first to get the ID
         user = userRepository.save(user);
 
-        // Create the credential entity linked to the user
+        RoleEntity incompleteRole = roleRepository.findByRole(Role.ROLE_INCOMPLETE_PROFILE)
+                .orElseThrow(() -> new RuntimeException("Default role ROLE_INCOMPLETE_PROFILE not found in database."));
+
         CredentialEntity credential = CredentialEntity.builder()
-                .email(email)                        // Store email
-                .provider(AuthProvider.GOOGLE)       // Set provider to GOOGLE
-                .providerId(googleId)                // Store Google's unique ID
-                .profilePictureUrl(pictureUrl)       // Store profile picture URL
-                .user(user)                          // Link to the UserEntity
-                .roles(getDefaultRoles())            // Assign default roles (e.g., ROLE_USER)
+                .email(email)
+                .provider(AuthProvider.GOOGLE)
+                .providerId(googleId)
+                .user(user)
+                .roles(Set.of(incompleteRole))
                 .build();
 
-        // Generate and set the refresh token
+
         String refreshToken = jwtService.generateRefreshToken(credential);
         credential.setRefreshToken(refreshToken);
 
-        // Save and return the newly created credential
         return credentialRepository.save(credential);
     }
 

@@ -13,6 +13,8 @@ public interface CredentialRepository extends JpaRepository<CredentialEntity, Lo
 
     Optional<CredentialEntity> findByEmail(String email);
 
+    Optional<CredentialEntity> findByEmailIgnoreCase(String email);
+
     @Query("SELECT c FROM CredentialEntity c JOIN c.user u WHERE u.username = :username")
     Optional<CredentialEntity> findByUsername(String username);
 

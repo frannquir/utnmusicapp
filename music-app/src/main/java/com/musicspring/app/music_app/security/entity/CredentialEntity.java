@@ -34,8 +34,6 @@ public class CredentialEntity implements UserDetails {
 
     private String providerId;
 
-    private String profilePictureUrl;
-
     @Column(length = 500)
     private String biography;
 
@@ -73,8 +71,7 @@ public class CredentialEntity implements UserDetails {
 
     @Override
     public String getUsername() {
-//        return email;
-        return user.getUsername();
+        return email;
     }
 
     @Override

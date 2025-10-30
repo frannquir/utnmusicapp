@@ -13,10 +13,8 @@ public class UserProfileResponse {
     private Long id;
     private String username;
     private String biography;
-    private String profilePictureUrl;
     private String joinDate;
     private Set<String> roles;
     private Set<String> permissions;
-
    private UserStatsResponse userStats;
 }
