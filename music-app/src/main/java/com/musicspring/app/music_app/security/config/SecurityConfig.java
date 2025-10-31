@@ -46,7 +46,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**","/api/v1/users/auth/**", "/login**", "/api/v1/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**","/api/v1/users/{id}/reactivate","/api/v1/stats/songs/mostReviewed").permitAll()
+                        .requestMatchers("/api/v1/auth/**","/api/v1/users/auth/**", "/login**", "/api/v1/oauth2/**","/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/login/oauth2/**","/h2-console","/h2-console/**","/api/v1/users/{id}/reactivate","/api/v1/stats/songs/mostReviewed","/api/v1/stats/albums/mostReviewed").permitAll()
 
                         .requestMatchers("/api/v1/users/complete-profile")
                         .hasRole("INCOMPLETE_PROFILE")
