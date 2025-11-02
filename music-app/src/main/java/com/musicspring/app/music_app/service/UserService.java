@@ -8,8 +8,10 @@ import com.musicspring.app.music_app.repository.*;
 import com.musicspring.app.music_app.model.mapper.SongReviewMapper;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
 import com.musicspring.app.music_app.security.dto.CompleteProfileRequest;
+import com.musicspring.app.music_app.security.dto.DeactivateAccountRequest;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.entity.RoleEntity;
+import com.musicspring.app.music_app.security.enums.AuthProvider;
 import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -129,6 +132,34 @@ public class UserService {
         if (!authenticatedUserId.equals(requestedUserId)) {
             throw new AccessDeniedException("You can only deactivate your account");
         }
+    }
+
+    @Transactional
+    public void deactivateAccount(String authenticatedUserEmail, DeactivateAccountRequest request){
+
+        CredentialEntity credential = credentialRepository.findByEmailIgnoreCase(authenticatedUserEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with Email: " + authenticatedUserEmail + " was not found."));
+
+        if(credential.getProvider() == AuthProvider.LOCAL){
+            if(request.password() == null || request.password().isBlank()){
+                throw new BadCredentialsException("Password is required");
+            }
+
+            if(!passwordEncoder.matches(request.password(), credential.getPassword())){
+                throw new BadCredentialsException("Invalid password");
+            }
+        }
+
+        Long userId = credential.getUser().getUserId();
+        commentRepository.deactivateByUserId(userId);
+        albumReviewRepository.deactivateByUserId(userId);
+        songReviewRepository.deactivateByUserId(userId);
+        commentRepository.deactivateByUserId(userId);
+        reactionRepository.deleteByUserId(userId);
+
+        UserEntity user = credential.getUser();
+        user.setActive(false);
+        userRepository.save(user);
     }
 
     @Transactional
@@ -259,7 +290,9 @@ public class UserService {
 
         userRepository.save(user);
 
-        return userMapper.toUserProfileResponse(user);
+        UserStatsResponse stats = statisticService.getUserStatistics(user.getUserId());
+
+        return userMapper.toUserProfileResponse(user, stats);
     }
 
     @Transactional

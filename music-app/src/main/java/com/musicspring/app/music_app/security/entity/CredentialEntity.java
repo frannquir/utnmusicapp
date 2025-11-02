@@ -81,7 +81,7 @@ public class CredentialEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return user != null && user.getActive();
+        return user == null || user.getActive();
     }
 
     @Override

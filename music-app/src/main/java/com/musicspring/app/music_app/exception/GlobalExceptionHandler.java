@@ -95,5 +95,17 @@ public class GlobalExceptionHandler {
                 .body(ErrorDetails.from(ex.getMessage(), request.getDescription(false)));
     }
 
+    @ExceptionHandler(AccountDeactivatedException.class)
+    public ResponseEntity<DeactivatedAccountDetails> handleAccountDeactivated(
+            AccountDeactivatedException ex, WebRequest request) {
+
+        DeactivatedAccountDetails details = DeactivatedAccountDetails.from(
+                ex.getMessage(),
+                request.getDescription(false),
+                ex.getUserId()
+        );
+
+        return new ResponseEntity<>(details, HttpStatus.LOCKED);
+    }
 
 }

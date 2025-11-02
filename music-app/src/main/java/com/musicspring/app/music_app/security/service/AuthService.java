@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.security.service;
 
+import com.musicspring.app.music_app.exception.AccountDeactivatedException;
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.mapper.CredentialMapper;
@@ -16,6 +17,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -61,22 +64,55 @@ public class AuthService {
 
     @Transactional
     public AuthResponse authenticateUser(AuthRequest authRequest) {
-        CredentialEntity user = authenticate(authRequest);
+        AuthRequest normalizedRequest = new AuthRequest(
+                authRequest.emailOrUsername().toLowerCase(),
+                authRequest.password()
+        );
+
+        CredentialEntity user = authenticate(normalizedRequest);
         String token = jwtService.generateToken(user);
 
         return authMapper.toAuthResponse(user, token);
     }
-    
+
     public CredentialEntity authenticate(AuthRequest input) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.emailOrUsername(),
-                        input.password()
-                )
-        );
-        return credentialsRepository.findByEmail(input.emailOrUsername())
-                .orElseGet(()->credentialsRepository.findByUsername(input.emailOrUsername())
-                .orElseThrow(()->new UsernameNotFoundException("User not found")));
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            input.emailOrUsername(),
+                            input.password()
+                    )
+            );
+
+        } catch (BadCredentialsException e) {
+            throw e;
+
+        } catch (LockedException e) {
+            CredentialEntity credential = credentialsRepository
+                    .findByEmailOrUsername(input.emailOrUsername())
+                    .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+
+            if (credential.getUser() != null && !credential.getUser().getActive()) {
+                throw new AccountDeactivatedException(
+                        "Account is deactivated",
+                        credential.getUser().getUserId()
+                );
+            } else {
+                throw e;
+            }
+        }
+
+        CredentialEntity credential = credentialsRepository.findByEmailOrUsername(input.emailOrUsername())
+                .orElseThrow(()->new UsernameNotFoundException("User not found after successful authentication"));
+
+        if (credential.getUser() != null && !credential.getUser().getActive()) {
+            throw new AccountDeactivatedException(
+                    "Account is deactivated",
+                    credential.getUser().getUserId()
+            );
+        }
+        return credential;
     }
     @Transactional
     public AuthResponse refreshAccessToken(String refreshToken) {

@@ -5,6 +5,7 @@ import com.musicspring.app.music_app.model.dto.request.UserUpdateRequest;
 import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
 import com.musicspring.app.music_app.security.dto.CompleteProfileRequest;
+import com.musicspring.app.music_app.security.dto.DeactivateAccountRequest;
 import com.musicspring.app.music_app.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -233,6 +234,40 @@ public class UserController {
             @Parameter(hidden = true)
             Pageable pageable) {
         return ResponseEntity.ok(userService.searchUsers(query, pageable));
+    }
+
+    @Operation(
+            summary = "Deactivate the current user's account",
+            description = "Logically deactivates the authenticated user's account. If the user is LOCAL, the password is required. If GOOGLE, it is not."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204",
+                    description = "Account deactivated successfully"
+            ),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid request (e.g., password blank)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication failed (e.g., incorrect password)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "403",
+                    description = "User is not authenticated",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            )
+    })
+    @PostMapping("/deactivate")
+    public ResponseEntity<Void> deactivateAccount(
+            @Parameter(description = "Request containing the user's current password (if local)", required = false)
+            @RequestBody DeactivateAccountRequest request,
+            Authentication authentication) {
+
+        String authenticatedUserEmail = authentication.getName();
+
+        userService.deactivateAccount(authenticatedUserEmail, request);
+
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(
