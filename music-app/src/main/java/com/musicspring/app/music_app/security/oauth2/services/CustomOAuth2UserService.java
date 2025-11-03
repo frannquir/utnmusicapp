@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.security.oauth2.services;
 
+import com.musicspring.app.music_app.model.enums.DefaultAvatar;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.entity.RoleEntity;
 import com.musicspring.app.music_app.security.enums.AuthProvider;
@@ -158,8 +159,8 @@ public class CustomOAuth2UserService extends OidcUserService {
                 .providerId(googleId)
                 .user(user)
                 .roles(Set.of(incompleteRole))
+                .profilePictureUrl(DefaultAvatar.getRandomAvatarFileName())
                 .build();
-
 
         String refreshToken = jwtService.generateRefreshToken(credential);
         credential.setRefreshToken(refreshToken);

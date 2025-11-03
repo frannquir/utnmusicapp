@@ -3,6 +3,7 @@ package com.musicspring.app.music_app.security.service;
 import com.musicspring.app.music_app.exception.AccountDeactivatedException;
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
 import com.musicspring.app.music_app.model.entity.UserEntity;
+import com.musicspring.app.music_app.model.enums.DefaultAvatar;
 import com.musicspring.app.music_app.model.mapper.CredentialMapper;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
 import com.musicspring.app.music_app.repository.UserRepository;
@@ -156,6 +157,7 @@ public class AuthService {
 
         credential.setEmail(normalizedEmail);
         credential.setPassword(passwordEncoder.encode(credential.getPassword()));
+        credential.setProfilePictureUrl(DefaultAvatar.getRandomAvatarFileName());
         credential.setRoles(Set.of(roleRepository
                 .findByRole(Role.ROLE_USER)
                 .orElseThrow(() -> new EntityNotFoundException("Default role ROLE_USER not found."))));

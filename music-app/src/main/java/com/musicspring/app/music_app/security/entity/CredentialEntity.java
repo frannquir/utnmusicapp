@@ -55,6 +55,9 @@ public class CredentialEntity implements UserDetails {
     @Column(name = "refresh_token", length = 248, unique = true, nullable = false)
     private String refreshToken;
 
+    @Column(name = "profile_picture_url", length = 500)
+    private String profilePictureUrl;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
