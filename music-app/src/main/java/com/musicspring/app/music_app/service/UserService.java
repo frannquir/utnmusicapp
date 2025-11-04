@@ -287,6 +287,9 @@ public class UserService {
         if (request.getBiography() != null && user.getCredential() != null) {
             user.getCredential().setBiography(request.getBiography());
         }
+        if (request.getProfilePictureUrl() != null && user.getCredential() != null) {
+            user.getCredential().setProfilePictureUrl(request.getProfilePictureUrl());
+        }
 
         userRepository.save(user);
 

@@ -16,5 +16,6 @@ public class UserProfileResponse {
     private String joinDate;
     private Set<String> roles;
     private Set<String> permissions;
-   private UserStatsResponse userStats;
+    private UserStatsResponse userStats;
+    private String profilePictureUrl;
 }

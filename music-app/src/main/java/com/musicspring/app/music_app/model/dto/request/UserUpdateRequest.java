@@ -17,8 +17,9 @@ public class UserUpdateRequest {
     @Schema(description = "New username for the user", example = "new_username")
     private String username;
 
-    @Schema(description = "URL of the user's profile picture", example = "https://example.com/profile.jpg")
-    @Size(max = 255, message = "Image URL must be at most 255 characters.")
+    @Schema(description = "Filename of the default avatar (e.g., 'pop-cat.png') or a full URL for a custom picture.",
+            example = "pop-cat.png")
+    @Size(max = 255, message = "Image URL or filename must be at most 255 characters.")
     private String profilePictureUrl;
 
     @Schema(description = "User's active status", example = "true")
