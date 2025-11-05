@@ -1,6 +1,7 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
+import com.musicspring.app.music_app.model.dto.request.PasswordUpdateRequest;
 import com.musicspring.app.music_app.model.dto.request.UserUpdateRequest;
 import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
@@ -234,6 +235,42 @@ public class UserController {
             @Parameter(hidden = true)
             Pageable pageable) {
         return ResponseEntity.ok(userService.searchUsers(query, pageable));
+    }
+
+    @Operation(
+            summary = "Change the current user's password",
+            description = "Updates the authenticated user's password. Requires current and new password. This endpoint only works for users with local authentication (not Google)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204",
+                    description = "Password changed successfully"
+            ),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid request (e.g., new passwords don't match, or password blank)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication failed (e.g., incorrect current password)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "403",
+                    description = "User is not authenticated",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            ),
+            @ApiResponse(responseCode = "422",
+                    description = "Cannot change password for a non-local account (e.g., Google)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+            )
+    })
+    @PutMapping("/me/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Parameter(description = "Request containing current and new password", required = true)
+            @Valid @RequestBody PasswordUpdateRequest request,
+            Authentication authentication) {
+
+        userService.updatePassword(request, authentication);
+
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(

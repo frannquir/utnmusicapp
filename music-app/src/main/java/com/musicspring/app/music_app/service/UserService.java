@@ -204,18 +204,23 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePassword(Long id, PasswordUpdateRequest passwordRequest, Authentication authentication) {
-        UserEntity user = findEntityById(id);
-        CredentialEntity credential = user.getCredential();
+    public void updatePassword(PasswordUpdateRequest passwordRequest, Authentication authentication) {
+        String email = authentication.getName();
 
-        if (credential == null)
-            throw new IllegalStateException("User has no credentials");
+        CredentialEntity credential = credentialRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new EntityNotFoundException("User with Email: " + email + " was not found."));
 
-        if (!passwordEncoder.matches(passwordRequest.getCurrentPassword(), credential.getPassword()))
-            throw new IllegalArgumentException("Current password is incorrect");
+        if(credential.getProvider() !=  AuthProvider.LOCAL){
+            throw new IllegalStateException("Cannot update password for non-local accounts");
+        }
 
-        if (!passwordRequest.getNewPassword().equals(passwordRequest.getConfirmPassword()))
-            throw new IllegalArgumentException("New password and confirmation do not match");
+        if(!passwordEncoder.matches(passwordRequest.getCurrentPassword(), credential.getPassword())){
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+
+        if(!passwordRequest.getNewPassword().equals(passwordRequest.getConfirmPassword())){
+            throw new IllegalArgumentException("New password and confirmation don't match");
+        }
 
         credential.setPassword(passwordEncoder.encode(passwordRequest.getNewPassword()));
         credentialRepository.save(credential);
