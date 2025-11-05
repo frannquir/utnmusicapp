@@ -1,4 +1,4 @@
-package com.musicspring.app.music_app.controller;
+ package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.AlbumReviewRequest;

@@ -5,7 +5,9 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "album_reviews")
+@Table(name = "album_reviews", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "album_id"})
+})
 
 @Getter
 @Setter
