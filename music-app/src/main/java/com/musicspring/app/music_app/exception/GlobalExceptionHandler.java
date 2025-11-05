@@ -108,4 +108,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(details, HttpStatus.LOCKED);
     }
 
+    @ExceptionHandler(DuplicateReviewException.class)
+    public ResponseEntity<ErrorDetails> handleDuplicateReview(DuplicateReviewException ex, WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorDetails.from(ex.getMessage(), request.getDescription(false)));
+    }
+
 }

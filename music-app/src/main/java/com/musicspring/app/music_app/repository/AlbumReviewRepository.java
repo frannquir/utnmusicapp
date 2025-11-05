@@ -48,4 +48,7 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,L
     @Query("SELECT COUNT(ar) FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = true")
     Long countByUserUserId(@Param("userId") Long userId);
 
+    @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.album.albumId = :albumId AND ar.active = true")
+    Optional<AlbumReviewEntity> findByUserUserIdAndAlbumAlbumIdAndActiveTrue(@Param("userId") Long userId, @Param("albumId") Long albumId);
+
 }

@@ -48,4 +48,7 @@ public interface SongReviewRepository extends JpaRepository<SongReviewEntity,Lon
 
     @Query("SELECT COUNT(sr) FROM SongReviewEntity sr WHERE sr.user.userId = :userId AND sr.active = true")
     Long countByUserUserId(@Param("userId") Long userId);
+
+    @Query("SELECT sr FROM SongReviewEntity sr WHERE sr.user.userId = :userId AND sr.song.songId = :songId AND sr.active = true")
+    Optional<SongReviewEntity> findByUserUserIdAndSongSongIdAndActiveTrue(@Param("userId") Long userId, @Param("songId") Long songId);
 }

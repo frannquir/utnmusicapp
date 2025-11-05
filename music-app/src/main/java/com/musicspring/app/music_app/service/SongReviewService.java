@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.service;
 
+import com.musicspring.app.music_app.exception.DuplicateReviewException;
 import com.musicspring.app.music_app.model.dto.request.*;
 import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.entity.*;
@@ -120,6 +121,13 @@ public class SongReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("User with ID: " + songReviewRequest.getUserId() + " not found."));
 
         SongEntity songEntity = findOrCreateSongEntity(songId, spotifyId);
+
+        // Check if user has already reviewed this song
+        Optional<SongReviewEntity> existingReview = songReviewRepository
+                .findByUserUserIdAndSongSongIdAndActiveTrue(userEntity.getUserId(), songEntity.getSongId());
+        if (existingReview.isPresent()) {
+            throw new DuplicateReviewException("User has already reviewed this song");
+        }
 
         SongReviewEntity songReviewEntity = songReviewMapper.toEntity(songReviewRequest, userEntity, songEntity);
         SongReviewEntity savedEntity = songReviewRepository.save(songReviewEntity);
