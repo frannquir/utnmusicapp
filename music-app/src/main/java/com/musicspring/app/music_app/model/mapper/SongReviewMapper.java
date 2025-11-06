@@ -1,6 +1,8 @@
 package com.musicspring.app.music_app.model.mapper;
 
 import com.musicspring.app.music_app.model.dto.request.SongReviewRequest;
+import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
+import com.musicspring.app.music_app.model.dto.response.SongResponse;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
 import com.musicspring.app.music_app.model.dto.response.UserProfileResponse;
 import com.musicspring.app.music_app.model.entity.SongReviewEntity;
@@ -40,10 +42,31 @@ public class SongReviewMapper {
                 .build();
     }
 
-    public List<SongReviewResponse> toResponseList(List<SongReviewEntity> songReviews) {
-        return songReviews.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public SongReviewResponse toResponse(
+            SongReviewEntity entity,
+            Long totalLikes,
+            Long totalDislikes,
+            Long totalLoves,
+            Long totalWows,
+            ReactionResponse userReaction
+    ) {
+        UserProfileResponse userProfile = userMapper.toUserProfileResponse(entity.getUser());
+        SongResponse songResponse = songMapper.toResponse(entity.getSong());
+
+        return SongReviewResponse.builder()
+                .songReviewId(entity.getReviewId())
+                .rating(entity.getRating())
+                .description(entity.getDescription())
+                .date(entity.getDate())
+                .active(entity.getActive())
+                .user(userProfile)
+                .song(songResponse)
+                .totalLikes(totalLikes)
+                .totalDislikes(totalDislikes)
+                .totalLoves(totalLoves)
+                .totalWows(totalWows)
+                .userReaction(userReaction)
+                .build();
     }
 
     public Page<SongReviewResponse> toResponsePage(Page<SongReviewEntity> songReviewPage) {

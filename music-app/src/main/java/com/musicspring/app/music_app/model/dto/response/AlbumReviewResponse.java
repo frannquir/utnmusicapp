@@ -27,5 +27,14 @@ public class AlbumReviewResponse {
 
     private AlbumResponse album;
 
+    private Long totalLikes;
+
+    private Long totalDislikes;
+
+    private Long totalLoves;
+
+    private Long totalWows;
+
+    private ReactionResponse userReaction;
 
 }

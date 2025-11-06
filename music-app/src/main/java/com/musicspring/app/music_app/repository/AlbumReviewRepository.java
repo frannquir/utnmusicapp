@@ -1,6 +1,7 @@
 package com.musicspring.app.music_app.repository;
 
 import com.musicspring.app.music_app.model.entity.AlbumReviewEntity;
+import com.musicspring.app.music_app.model.entity.CommentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,6 +29,8 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReviewEntity,L
 
     @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.user.userId = :userId AND ar.active = false")
     Page<AlbumReviewEntity> findByUser_UserIdAndActiveFalse(Long userId,Pageable pageable);
+
+    Page<AlbumReviewEntity> findByUser_UserIdAndActiveTrue(Long userId, Pageable pageable);
 
     @Query("SELECT ar FROM AlbumReviewEntity ar WHERE ar.album.spotifyId = :spotifyId AND ar.active = true")
     Page<AlbumReviewEntity> findByAlbum_SpotifyId(@Param("spotifyId") String spotifyId, Pageable pageable);

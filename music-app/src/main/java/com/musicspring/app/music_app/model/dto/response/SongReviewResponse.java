@@ -26,4 +26,14 @@ public class SongReviewResponse {
     private UserProfileResponse user;
 
     private SongResponse song;
+
+    private Long totalLikes;
+
+    private Long totalDislikes;
+
+    private Long totalLoves;
+
+    private Long totalWows;
+
+    private ReactionResponse userReaction;
 }

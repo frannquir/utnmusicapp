@@ -29,4 +29,14 @@ public class CommentResponse {
 
     private String username;
 
+    private Long totalLikes;
+
+    private Long totalDislikes;
+
+    private Long totalLoves;
+
+    private Long totalWows;
+
+    private ReactionResponse userReaction;
+
 }

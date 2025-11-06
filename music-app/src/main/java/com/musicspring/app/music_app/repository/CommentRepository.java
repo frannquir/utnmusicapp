@@ -31,6 +31,8 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>{
     @Query("SELECT c FROM CommentEntity c WHERE c.user.userId = :userId AND c.active = false")
     Page<CommentEntity> findByUser_UserIdAndActiveFalse(@Param("userId") Long userId, Pageable pageable);
 
+    Page<CommentEntity> findByUser_UserIdAndActiveTrue(Long userId, Pageable pageable);
+
     @Modifying
     @Query("""
     UPDATE CommentEntity c SET c.active = false 
