@@ -1,5 +1,7 @@
 package com.musicspring.app.music_app.model.mapper;
 
+import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
+import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
 import com.musicspring.app.music_app.model.dto.response.UserProfileResponse;
 import com.musicspring.app.music_app.model.entity.AlbumEntity;
 import com.musicspring.app.music_app.model.dto.request.AlbumReviewRequest;
@@ -34,6 +36,33 @@ public class AlbumReviewMapper {
                 .active(albumReview.getActive())
                 .user(userProfile)
                 .album(albumMapper.toResponse(albumReview.getAlbum()))
+                .build();
+    }
+
+    public AlbumReviewResponse toResponse(
+            AlbumReviewEntity entity,
+            Long totalLikes,
+            Long totalDislikes,
+            Long totalLoves,
+            Long totalWows,
+            ReactionResponse userReaction
+    ) {
+        UserProfileResponse userProfile = userMapper.toUserProfileResponse(entity.getUser());
+        AlbumResponse albumResponse = albumMapper.toResponse(entity.getAlbum());
+
+        return AlbumReviewResponse.builder()
+                .albumReviewId(entity.getReviewId())
+                .rating(entity.getRating())
+                .description(entity.getDescription())
+                .date(entity.getDate())
+                .active(entity.getActive())
+                .user(userProfile)
+                .album(albumResponse)
+                .totalLikes(totalLikes)
+                .totalDislikes(totalDislikes)
+                .totalLoves(totalLoves)
+                .totalWows(totalWows)
+                .userReaction(userReaction)
                 .build();
     }
 

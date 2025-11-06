@@ -4,10 +4,13 @@ import com.musicspring.app.music_app.exception.DuplicateReviewException;
 import com.musicspring.app.music_app.model.dto.request.*;
 import com.musicspring.app.music_app.model.dto.response.*;
 import com.musicspring.app.music_app.model.entity.*;
+import com.musicspring.app.music_app.model.enums.ReactionType;
 import com.musicspring.app.music_app.model.mapper.AlbumMapper;
 import com.musicspring.app.music_app.model.mapper.AlbumReviewMapper;
 import com.musicspring.app.music_app.model.mapper.ArtistMapper;
+import com.musicspring.app.music_app.model.mapper.ReactionMapper;
 import com.musicspring.app.music_app.repository.*;
+import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.service.AuthService;
 import com.musicspring.app.music_app.spotify.service.SpotifyService;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +38,7 @@ public class AlbumReviewService {
     private final ArtistMapper artistMapper;
     private final ArtistRepository artistRepository;
     private final ReactionRepository reactionRepository;
+    private final ReactionMapper reactionMapper;
     private final CommentRepository commentRepository;
 
 
@@ -43,7 +50,10 @@ public class AlbumReviewService {
                               SpotifyService spotifyService,
                               AlbumMapper albumMapper,
                               ArtistMapper artistMapper,
-                              ArtistRepository artistRepository, ReactionRepository reactionRepository, CommentRepository commentRepository) {
+                              ArtistRepository artistRepository,
+                              ReactionRepository reactionRepository,
+                              ReactionMapper reactionMapper,
+                              CommentRepository commentRepository) {
         this.albumReviewRepository = albumReviewRepository;
         this.albumRepository = albumRepository;
         this.userRepository = userRepository;
@@ -53,16 +63,19 @@ public class AlbumReviewService {
         this.artistMapper = artistMapper;
         this.artistRepository = artistRepository;
         this.reactionRepository = reactionRepository;
+        this.reactionMapper = reactionMapper;
         this.commentRepository = commentRepository;
     }
 
     public Page<AlbumReviewResponse> findAll(Pageable pageable) {
-        return albumReviewMapper.toResponsePage(albumReviewRepository.findAll(pageable));
+        return albumReviewRepository.findAll(pageable)
+                .map(this::enrichAlbumReviewResponse);
     }
 
     public AlbumReviewResponse findById(Long id) {
-        return albumReviewMapper.toResponse(albumReviewRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found.")));
+        AlbumReviewEntity review = albumReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found."));
+        return enrichAlbumReviewResponse(review);
     }
 
     @Transactional
@@ -95,7 +108,7 @@ public class AlbumReviewService {
 
         commentRepository.reactivateByReviewId(id);
 
-        return albumReviewMapper.toResponse(albumReview);
+        return enrichAlbumReviewResponse(albumReview);
     }
 
     @Transactional
@@ -125,7 +138,7 @@ public class AlbumReviewService {
         AlbumReviewEntity albumReviewEntity = albumReviewMapper.toEntity(albumReviewRequest, userEntity, albumEntity);
         AlbumReviewEntity savedEntity = albumReviewRepository.save(albumReviewEntity);
 
-        return albumReviewMapper.toResponse(savedEntity);
+        return enrichAlbumReviewResponse(savedEntity);
     }
 
     private void validateUserOwnership(Long authenticatedUserId, Long requestedUserId) {
@@ -173,16 +186,19 @@ public class AlbumReviewService {
 
         if (albumId != null) {
             albumRepository.findById(albumId).orElseThrow(() -> new EntityNotFoundException("Album with ID: " + albumId + " not found."));
-            return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_AlbumId(albumId, pageable));
+            return albumReviewRepository.findByAlbum_AlbumId(albumId, pageable)
+                    .map(this::enrichAlbumReviewResponse);
         } else {
             albumRepository.findBySpotifyId(spotifyId).orElseThrow(() -> new EntityNotFoundException("Album with spotifyId: " + spotifyId + " not found."));
-            return albumReviewMapper.toResponsePage(albumReviewRepository.findByAlbum_SpotifyId(spotifyId, pageable));
+            return albumReviewRepository.findByAlbum_SpotifyId(spotifyId, pageable)
+                    .map(this::enrichAlbumReviewResponse);
         }
     }
 
     public Page<AlbumReviewResponse> findByUserId(Long userId, Pageable pageable) {
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with ID: " + userId + " not found."));
-        return albumReviewMapper.toResponsePage(albumReviewRepository.findByUser_UserId(userId, pageable));
+        return albumReviewRepository.findByUser_UserIdAndActiveTrue(userId, pageable)
+                .map(this::enrichAlbumReviewResponse);
     }
 
     public AlbumReviewResponse updateAlbumReviewContent(Long albumReviewId, ReviewPatchRequest patchRequest) {
@@ -195,6 +211,38 @@ public class AlbumReviewService {
 
         AlbumReviewEntity updated = albumReviewRepository.save(albumReviewEntity);
 
-        return albumReviewMapper.toResponse(updated);
+        return enrichAlbumReviewResponse(updated);
+    }
+
+    private AlbumReviewResponse enrichAlbumReviewResponse(AlbumReviewEntity review) {
+        Long reviewId = review.getReviewId();
+
+        Long totalLikes = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.LIKE);
+        Long totalDislikes = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.DISLIKE);
+        Long totalLoves = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.LOVE);
+        Long totalWows = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.WOW);
+
+        ReactionResponse userReactionDto = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated()) {
+            CredentialEntity credential = (CredentialEntity) authentication.getPrincipal();
+            UserEntity currentUser = credential.getUser();
+
+            Optional<ReactionEntity> userReactionOpt = reactionRepository.findByUserAndReview(currentUser, review);
+            if (userReactionOpt.isPresent()) {
+                userReactionDto = reactionMapper.toResponse(userReactionOpt.get());
+            }
+        }
+
+        // 3. Usar el mapper sobrecargado
+        return albumReviewMapper.toResponse(
+                review,
+                totalLikes,
+                totalDislikes,
+                totalLoves,
+                totalWows,
+                userReactionDto
+        );
     }
 }

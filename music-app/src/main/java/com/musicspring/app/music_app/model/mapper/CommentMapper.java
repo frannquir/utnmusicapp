@@ -2,6 +2,7 @@ package com.musicspring.app.music_app.model.mapper;
 
 import com.musicspring.app.music_app.model.dto.request.CommentRequest;
 import com.musicspring.app.music_app.model.dto.response.CommentResponse;
+import com.musicspring.app.music_app.model.dto.response.ReactionResponse;
 import com.musicspring.app.music_app.model.entity.CommentEntity;
 import com.musicspring.app.music_app.model.entity.ReviewEntity;
 import com.musicspring.app.music_app.model.entity.UserEntity;
@@ -21,6 +22,31 @@ public class CommentMapper {
                 .createdAt(comment.getCreatedAt())
                 .commentType(comment.getCommentType())
                 .username(comment.getUser().getUsername())
+                .build();
+    }
+
+    public CommentResponse toResponse(
+            CommentEntity comment,
+            Long totalLikes,
+            Long totalDislikes,
+            Long totalLoves,
+            Long totalWows,
+            ReactionResponse userReaction
+    ) {
+        return CommentResponse.builder()
+
+                .commentId(comment.getCommentId())
+                .reviewId(comment.getReviewEntity().getReviewId())
+                .userId(comment.getUser().getUserId())
+                .text(comment.getText())
+                .createdAt(comment.getCreatedAt())
+                .commentType(comment.getCommentType())
+                .username(comment.getUser().getUsername())
+                .totalLikes(totalLikes)
+                .totalDislikes(totalDislikes)
+                .totalLoves(totalLoves)
+                .totalWows(totalWows)
+                .userReaction(userReaction)
                 .build();
     }
 

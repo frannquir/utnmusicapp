@@ -27,6 +27,10 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
                                                           @Param("reacted") ReactedType reactedType,
                                                           Pageable pageable);
 
+    Long countByReview_ReviewIdAndReactionType(Long reviewId, ReactionType reactionType);
+
+    Long countByComment_CommentIdAndReactionType(Long commentId, ReactionType reactionType);
+
     @Query("SELECT r FROM ReactionEntity r " +
             "WHERE r.user.userId = :userId AND " +
             "((r.review IS NOT NULL AND r.review.active = true) OR " +
