@@ -36,4 +36,6 @@ public class SongReviewResponse {
     private Long totalWows;
 
     private ReactionResponse userReaction;
+
+    private Long totalComments;
 }

@@ -48,7 +48,8 @@ public class SongReviewMapper {
             Long totalDislikes,
             Long totalLoves,
             Long totalWows,
-            ReactionResponse userReaction
+            ReactionResponse userReaction,
+            Long totalComments
     ) {
         UserProfileResponse userProfile = userMapper.toUserProfileResponse(entity.getUser());
         SongResponse songResponse = songMapper.toResponse(entity.getSong());
@@ -66,6 +67,7 @@ public class SongReviewMapper {
                 .totalLoves(totalLoves)
                 .totalWows(totalWows)
                 .userReaction(userReaction)
+                .totalComments(totalComments)
                 .build();
     }
 

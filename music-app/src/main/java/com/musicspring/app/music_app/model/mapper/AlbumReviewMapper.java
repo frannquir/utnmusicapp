@@ -45,7 +45,8 @@ public class AlbumReviewMapper {
             Long totalDislikes,
             Long totalLoves,
             Long totalWows,
-            ReactionResponse userReaction
+            ReactionResponse userReaction,
+            Long totalComments
     ) {
         UserProfileResponse userProfile = userMapper.toUserProfileResponse(entity.getUser());
         AlbumResponse albumResponse = albumMapper.toResponse(entity.getAlbum());
@@ -63,6 +64,7 @@ public class AlbumReviewMapper {
                 .totalLoves(totalLoves)
                 .totalWows(totalWows)
                 .userReaction(userReaction)
+                .totalComments(totalComments)
                 .build();
     }
 
