@@ -221,6 +221,7 @@ public class AlbumReviewService {
         Long totalDislikes = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.DISLIKE);
         Long totalLoves = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.LOVE);
         Long totalWows = reactionRepository.countByReview_ReviewIdAndReactionType(reviewId, ReactionType.WOW);
+        Long totalComments = commentRepository.countByReviewEntity_ReviewIdAndActiveTrue(reviewId);
 
         ReactionResponse userReactionDto = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -235,14 +236,14 @@ public class AlbumReviewService {
             }
         }
 
-        // 3. Usar el mapper sobrecargado
         return albumReviewMapper.toResponse(
                 review,
                 totalLikes,
                 totalDislikes,
                 totalLoves,
                 totalWows,
-                userReactionDto
+                userReactionDto,
+                totalComments
         );
     }
 }

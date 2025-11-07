@@ -37,4 +37,6 @@ public class AlbumReviewResponse {
 
     private ReactionResponse userReaction;
 
+    private Long totalComments;
+
 }

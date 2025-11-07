@@ -79,4 +79,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>{
 
     @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.user.userId = :userId AND c.createdAt >= :startOfMonth AND c.active = true")
     Long countCommentsThisMonth(@Param("userId") Long userId, @Param("startOfMonth") LocalDateTime startOfMonth);
+
+    @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.reviewEntity.reviewId = :reviewId AND c.active = true")
+    Long countByReviewEntity_ReviewIdAndActiveTrue(@Param("reviewId") Long reviewId);
 }
