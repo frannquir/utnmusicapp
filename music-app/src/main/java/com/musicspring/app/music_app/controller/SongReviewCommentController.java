@@ -204,9 +204,11 @@ public class SongReviewCommentController {
             @Parameter(description = "Page number to retrieve (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int pageNumber,
             @Parameter(description = "Field to sort by", example = "createdAt")
-            @RequestParam(defaultValue = "createdAt") String sort) {
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "DESC") String direction) {
 
-        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sort));
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(sortDirection, sort));
         Page<CommentResponse> comments = commentService.getCommentsByReviewId(reviewId, pageable);
         return ResponseEntity.ok(comments);
     }
