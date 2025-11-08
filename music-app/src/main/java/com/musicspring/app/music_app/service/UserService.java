@@ -91,8 +91,9 @@ public class UserService {
 
 
     public UserProfileResponse findById(Long id) {
+        UserStatsResponse userStats = statisticService.getUserStatistics(id);
         return userRepository.findById(id)
-                .map(userMapper::toUserProfileResponse)
+                .map(user -> userMapper.toUserProfileResponse(user, userStats))
                 .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
     }
 
