@@ -212,13 +212,14 @@ public class SongReviewService {
         return page.map(this::enrichSongReviewResponse);
     }
 
-    public SongReviewResponse updateSongReviewContent(Long songReviewId, ReviewPatchRequest patchRequest) {
+    public SongReviewResponse updateSongReview(Long songReviewId, ReviewUpdateRequest updateRequest) {
         SongReviewEntity songReviewEntity = songReviewRepository.findById(songReviewId)
                 .orElseThrow(() -> new EntityNotFoundException("Song review with ID: " + songReviewId + " not found."));
 
         AuthService.validateRequestUserOwnership(songReviewEntity.getUser().getUserId());
 
-        songReviewEntity.setDescription(patchRequest.getDescription());
+        songReviewEntity.setRating(updateRequest.getRating());
+        songReviewEntity.setDescription(updateRequest.getDescription());
 
         SongReviewEntity updated = songReviewRepository.save(songReviewEntity);
 
