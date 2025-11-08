@@ -1,7 +1,7 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
-import com.musicspring.app.music_app.model.dto.request.ReviewPatchRequest;
+import com.musicspring.app.music_app.model.dto.request.ReviewUpdateRequest;
 import com.musicspring.app.music_app.model.dto.request.SongReviewRequest;
 import com.musicspring.app.music_app.model.dto.response.CommentResponse;
 import com.musicspring.app.music_app.model.dto.response.SongReviewResponse;
@@ -368,8 +368,8 @@ public class SongReviewController {
     }
 
     @Operation(
-            summary = "Update the content of an existing song review",
-            description = "Modifies the content of a song review identified by its ID. Only the owner of the review can perform this action."
+            summary = "Update the rating and description of an existing song review",
+            description = "Modifies the rating and description of a song review identified by its ID. Only the owner of the review can perform this action."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -413,11 +413,11 @@ public class SongReviewController {
                     )
             )
     })
-    @PatchMapping("/{songReviewId}")
-    public ResponseEntity<SongReviewResponse> updateSongReviewContent(
+    @PutMapping("/{songReviewId}")
+    public ResponseEntity<SongReviewResponse> updateSongReview(
             @PathVariable Long songReviewId,
-            @RequestBody ReviewPatchRequest patchRequest) {
-        SongReviewResponse updated = songReviewService.updateSongReviewContent(songReviewId, patchRequest);
+            @Valid @RequestBody ReviewUpdateRequest updateRequest) {
+        SongReviewResponse updated = songReviewService.updateSongReview(songReviewId, updateRequest);
         return ResponseEntity.ok(updated);
     }
 

@@ -2,7 +2,7 @@
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.AlbumReviewRequest;
-import com.musicspring.app.music_app.model.dto.request.ReviewPatchRequest;
+import com.musicspring.app.music_app.model.dto.request.ReviewUpdateRequest;
 import com.musicspring.app.music_app.model.dto.response.AlbumReviewResponse;
 import com.musicspring.app.music_app.service.AlbumReviewService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -360,8 +360,8 @@ public class AlbumReviewController {
         return ResponseEntity.noContent().build();
     }
     @Operation(
-            summary = "Update the content of an existing album review",
-            description = "Modifies the content of a album review identified by its ID. Only the owner of the review can perform this action."
+            summary = "Update the rating and description of an existing album review",
+            description = "Modifies the rating and description of an album review identified by its ID. Only the owner of the review can perform this action."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -405,11 +405,11 @@ public class AlbumReviewController {
                     )
             )
     })
-    @PatchMapping("/{albumReviewId}")
-    public ResponseEntity<AlbumReviewResponse> updateAlbumReviewContent(
+    @PutMapping("/{albumReviewId}")
+    public ResponseEntity<AlbumReviewResponse> updateAlbumReview(
             @PathVariable Long albumReviewId,
-            @RequestBody ReviewPatchRequest patchRequest) {
-        AlbumReviewResponse updated = albumReviewService.updateAlbumReviewContent(albumReviewId, patchRequest);
+            @Valid @RequestBody ReviewUpdateRequest updateRequest) {
+        AlbumReviewResponse updated = albumReviewService.updateAlbumReview(albumReviewId, updateRequest);
         return ResponseEntity.ok(updated);
     }
 }

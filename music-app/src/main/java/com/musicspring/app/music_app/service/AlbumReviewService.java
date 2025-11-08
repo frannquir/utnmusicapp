@@ -201,13 +201,14 @@ public class AlbumReviewService {
                 .map(this::enrichAlbumReviewResponse);
     }
 
-    public AlbumReviewResponse updateAlbumReviewContent(Long albumReviewId, ReviewPatchRequest patchRequest) {
+    public AlbumReviewResponse updateAlbumReview(Long albumReviewId, ReviewUpdateRequest updateRequest) {
         AlbumReviewEntity albumReviewEntity = albumReviewRepository.findById(albumReviewId)
                         .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + albumReviewId + " not found."));
 
         AuthService.validateRequestUserOwnership(albumReviewEntity.getUser().getUserId());
 
-        albumReviewEntity.setDescription(patchRequest.getDescription());
+        albumReviewEntity.setRating(updateRequest.getRating());
+        albumReviewEntity.setDescription(updateRequest.getDescription());
 
         AlbumReviewEntity updated = albumReviewRepository.save(albumReviewEntity);
 
