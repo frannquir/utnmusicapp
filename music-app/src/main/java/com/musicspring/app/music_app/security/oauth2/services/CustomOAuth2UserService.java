@@ -11,6 +11,7 @@ import com.musicspring.app.music_app.security.repository.RoleRepository;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.repository.UserRepository;
 import com.musicspring.app.music_app.security.service.JwtService;
+import com.musicspring.app.music_app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -46,6 +47,7 @@ public class CustomOAuth2UserService extends OidcUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
+    private final UserService userService;
 
     /**
      * Constructor for dependency injection.
@@ -57,11 +59,14 @@ public class CustomOAuth2UserService extends OidcUserService {
     @Autowired
     public CustomOAuth2UserService(CredentialRepository credentialRepository,
                                    UserRepository userRepository,
-                                   RoleRepository roleRepository, JwtService jwtService) {
+                                   RoleRepository roleRepository,
+                                   JwtService jwtService,
+                                   UserService userService) {
         this.credentialRepository = credentialRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.jwtService = jwtService;
+        this.userService = userService;
     }
 
     /**
@@ -117,6 +122,13 @@ public class CustomOAuth2UserService extends OidcUserService {
             }
 
             credential.setProviderId(googleId);
+
+            if(credential.getUser() != null && !credential.getUser().getActive()){
+                userService.reactivateUser(credential.getUser().getUserId());
+
+                credential = credentialRepository.findByEmailIgnoreCase(normalizedEmail)
+                        .orElseThrow(() -> new OAuth2AuthenticationException("Failed to refetch reactivated user."));
+            }
 
             if (credential.getRefreshToken() == null) {
                 String refreshToken = jwtService.generateRefreshToken(credential);
