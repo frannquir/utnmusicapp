@@ -1,5 +1,7 @@
 package com.musicspring.app.music_app.security.oauth2.services;
 
+import com.musicspring.app.music_app.exception.AccountBannedException;
+import com.musicspring.app.music_app.exception.AccountDeactivatedException;
 import com.musicspring.app.music_app.model.enums.DefaultAvatar;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.entity.RoleEntity;
@@ -22,7 +24,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.security.oauth2.core.OAuth2Error;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -82,15 +84,24 @@ public class CustomOAuth2UserService extends OidcUserService {
     @Override
     @Transactional // Ensures database operations are atomic
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-        // 1. Load the standard OIDC user information using the parent class method
+        // 1. Load the standard OIDC user information
         OidcUser oidcUser = super.loadUser(userRequest);
+        CredentialEntity credential;
 
-        // 2. Process the OIDC user data using custom logic to find/create CredentialEntity
-        CredentialEntity credential = processOidcUser(oidcUser);
+        try {
+            // 2. Process the OIDC user
+            credential = processOidcUser(oidcUser);
 
-        // 3. Return your custom wrapper which should implement OidcUser
-        // Ensure CustomOAuth2User's constructor accepts OidcIdToken and OidcUserInfo
-        // and that CustomOAuth2User implements the OidcUser interface.
+        } catch (AccountBannedException ex) {
+            throw new OAuth2AuthenticationException(new OAuth2Error("account_banned"), ex);
+
+        } catch (AccountDeactivatedException ex) {
+            throw new OAuth2AuthenticationException(new OAuth2Error("account_deactivated"), ex);
+
+        } catch (Exception ex) {
+            System.err.println("Unexpected error during OIDC user processing: " + ex.getMessage());
+            throw new OAuth2AuthenticationException(new OAuth2Error("internal_error"), ex);
+        }
         return new CustomOAuth2User(oidcUser.getAttributes(), credential, oidcUser.getIdToken(), oidcUser.getUserInfo());
     }
 
@@ -116,6 +127,17 @@ public class CustomOAuth2UserService extends OidcUserService {
 
         if (credentialOptional.isPresent()) {
             credential = credentialOptional.get();
+
+            UserEntity user = credential.getUser();
+            if (user != null) {
+                if (user.getIsBanned()) {
+
+                    throw new AccountBannedException("This account has been banned by an administrator.");
+                }
+                if (!user.getActive()) {
+                    throw new AccountDeactivatedException("Account is deactivated", user.getUserId());
+                }
+            }
 
             if (credential.getProvider() == AuthProvider.LOCAL) {
                 credential.setProvider(AuthProvider.GOOGLE);
@@ -159,6 +181,7 @@ public class CustomOAuth2UserService extends OidcUserService {
         UserEntity user = UserEntity.builder()
                 .username(tempUsername)
                 .active(true)
+                .isBanned(false)
                 .build();
         user = userRepository.save(user);
 

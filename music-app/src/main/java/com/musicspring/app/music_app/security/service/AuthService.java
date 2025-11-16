@@ -1,5 +1,6 @@
 package com.musicspring.app.music_app.security.service;
 
+import com.musicspring.app.music_app.exception.AccountBannedException;
 import com.musicspring.app.music_app.exception.AccountDeactivatedException;
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
 import com.musicspring.app.music_app.model.entity.UserEntity;
@@ -94,19 +95,22 @@ public class AuthService {
                     .findByEmailOrUsername(input.emailOrUsername())
                     .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
-            if (credential.getUser() != null && !credential.getUser().getActive()) {
-                throw new AccountDeactivatedException(
-                        "Account is deactivated",
-                        credential.getUser().getUserId()
-                );
-            } else {
-                throw e;
+            if (credential.getUser() != null) {
+                if (credential.getUser().getIsBanned()) {
+                    throw new AccountBannedException("This account has been banned by an administrator.");
+                }
+                if (!credential.getUser().getActive()) {
+                    throw new AccountDeactivatedException(
+                            "Account is deactivated",
+                            credential.getUser().getUserId()
+                    );
+                }
             }
+            throw e;
         }
 
         CredentialEntity credential = credentialsRepository.findByEmailOrUsername(input.emailOrUsername())
                 .orElseThrow(()->new UsernameNotFoundException("User not found after successful authentication"));
-
         if (credential.getUser() != null && !credential.getUser().getActive()) {
             throw new AccountDeactivatedException(
                     "Account is deactivated",

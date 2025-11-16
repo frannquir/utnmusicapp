@@ -23,12 +23,14 @@ public class UserMapper {
         return UserEntity.builder()
                 .username(authRequest.emailOrUsername())
                 .active(true)
+                .isBanned(false)
                 .build();
     }
     public UserEntity toUserEntity (SignupRequest signupRequest) {
         return UserEntity.builder()
                 .username(signupRequest.getUsername())
                 .active(true)
+                .isBanned(false)
                 .build();
     }
     public UserProfileResponse toUserProfileResponse(UserEntity user, UserStatsResponse userStats) {
