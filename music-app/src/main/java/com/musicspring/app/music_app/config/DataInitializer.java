@@ -146,6 +146,7 @@ public class DataInitializer {
             UserEntity adminUser = UserEntity.builder()
                     .username("admin")
                     .active(true)
+                    .isBanned(false)
                     .build();
             adminUser = userRepository.save(adminUser);
 

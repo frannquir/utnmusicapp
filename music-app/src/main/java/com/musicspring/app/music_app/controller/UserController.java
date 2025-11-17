@@ -309,7 +309,7 @@ public class UserController {
 
     @Operation(
             summary = "Reactivate a user by ID",
-            description = "Logically reactivates a user by setting their active status to true, including their reviews and comments."
+            description = "Logically reactivates a user's *self-deactivated* account. This will fail with a 403 Forbidden error if the account is banned by an admin."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204",
@@ -344,6 +344,42 @@ public class UserController {
             @Parameter(description = "Internal user ID", example = "1")
             @PathVariable Long id) {
         userService.reactivateUser(id);
+    }
+
+    @Operation(
+            summary = "[ADMIN] Ban a user by ID",
+            description = "Logically deactivates and bans a user account by setting active=false and isBanned=true. This action can only be performed by an ADMIN."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User banned successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: Not an ADMIN"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "400", description = "User is already banned")
+    })
+    @PostMapping("/{id}/ban")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void banUser(
+            @Parameter(description = "Internal user ID to ban", example = "1")
+            @PathVariable Long id) {
+        userService.banUser(id);
+    }
+
+    @Operation(
+            summary = "[ADMIN] Unban a user by ID",
+            description = "Logically reactivates and unbans a user account by setting active=true and isBanned=false. This action can only be performed by an ADMIN."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User unbanned successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: Not an ADMIN"),
+            @ApiResponse(responseCode = "404", description = "User not found or is not inactive"),
+            @ApiResponse(responseCode = "400", description = "User is not currently banned")
+    })
+    @PostMapping("/{id}/unban")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unbanUser(
+            @Parameter(description = "Internal user ID to unban", example = "1")
+            @PathVariable Long id) {
+        userService.unbanUser(id);
     }
 
     @Operation(

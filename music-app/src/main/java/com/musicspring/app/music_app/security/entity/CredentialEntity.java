@@ -84,7 +84,7 @@ public class CredentialEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return user == null || user.getActive();
+        return user == null || (user.getActive() && !user.getIsBanned());
     }
 
     @Override
@@ -94,6 +94,6 @@ public class CredentialEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user != null && user.getActive();
+        return user != null && user.getActive() && !user.getIsBanned();
     }
 }

@@ -37,6 +37,10 @@ public class UserEntity {
     @Column(name = "active", nullable = false)
     private Boolean active;
 
+    @Column(name = "is_banned", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private Boolean isBanned = false;
+
     @OneToMany(mappedBy = "user")
     private List<ReactionEntity> reactions;
 

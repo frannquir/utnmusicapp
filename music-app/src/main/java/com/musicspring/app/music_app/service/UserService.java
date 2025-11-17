@@ -92,13 +92,13 @@ public class UserService {
 
     public UserProfileResponse findById(Long id) {
         UserStatsResponse userStats = statisticService.getUserStatistics(id);
-        return userRepository.findById(id)
+        return userRepository.findByIdAndActiveTrue(id)
                 .map(user -> userMapper.toUserProfileResponse(user, userStats))
                 .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
     }
 
     public UserEntity findEntityById(Long id) {
-        return userRepository.findById(id)
+        return userRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
     }
 
@@ -115,18 +115,8 @@ public class UserService {
     public void deleteUser(Long id) {
         Long authenticatedUserId = AuthService.extractUserId();
         validateUserOwnership(authenticatedUserId,id);
-
-        UserEntity user = userRepository.findById(id).orElseThrow(()
-                -> new EntityNotFoundException("User with ID: " + id + " was not found."));
-
-        commentRepository.deactivateCommentsOnUserReviews(id);
-        albumReviewRepository.deactivateByUserId(id);
-        songReviewRepository.deactivateByUserId(id);
-        commentRepository.deactivateByUserId(id);
-        reactionRepository.deleteByUserId(id);
-
-        user.setActive(false);
-        userRepository.save(user);
+        UserEntity user = findEntityById(id);
+        deactivateUserAccountLogic(user);
     }
 
     private void validateUserOwnership(Long authenticatedUserId, Long requestedUserId) {
@@ -150,31 +140,18 @@ public class UserService {
                 throw new BadCredentialsException("Invalid password");
             }
         }
-
-        Long userId = credential.getUser().getUserId();
-        commentRepository.deactivateByUserId(userId);
-        albumReviewRepository.deactivateByUserId(userId);
-        songReviewRepository.deactivateByUserId(userId);
-        commentRepository.deactivateByUserId(userId);
-        reactionRepository.deleteByUserId(userId);
-
         UserEntity user = credential.getUser();
-        user.setActive(false);
-        userRepository.save(user);
+        deactivateUserAccountLogic(user);
     }
 
     @Transactional
     public void reactivateUser(Long id) {
         UserEntity user = userRepository.findByIdAndActiveFalse(id).orElseThrow(()
                 -> new EntityNotFoundException("User with ID: " + id + " was not found."));
-
-        user.setActive(true);
-        userRepository.save(user);
-
-        albumReviewRepository.reactivateByUserId(id);
-        songReviewRepository.reactivateByUserId(id);
-        commentRepository.reactivateByUserId(id);
-        commentRepository.reactivateCommentsOnUserReviews(id);
+        if (user.getIsBanned()) {
+            throw new AccessDeniedException("This account is banned by an administrator and cannot be reactivated.");
+        }
+        reactivateUserAccountLogic(user);
     }
 
     public Page<UserProfileResponse> searchUsers(String query, Pageable pageable) {
@@ -281,7 +258,7 @@ public class UserService {
     }
 
     public UserProfileResponse updateUserProfile(Long id, UserUpdateRequest request) {
-        UserEntity user = userRepository.findById(id)
+        UserEntity user = userRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if (request.getUsername() != null) {
@@ -341,5 +318,51 @@ public class UserService {
         String newToken = jwtService.generateToken(credential);
 
         return authMapper.toAuthResponse(credential, newToken);
+    }
+    private void deactivateUserAccountLogic(UserEntity user) {
+        Long userId = user.getUserId();
+        commentRepository.deactivateCommentsOnUserReviews(userId);
+        albumReviewRepository.deactivateByUserId(userId);
+        songReviewRepository.deactivateByUserId(userId);
+        commentRepository.deactivateByUserId(userId);
+        reactionRepository.deleteByUserId(userId);
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    private void reactivateUserAccountLogic(UserEntity user) {
+        Long userId = user.getUserId();
+        user.setActive(true);
+        userRepository.save(user);
+        albumReviewRepository.reactivateByUserId(userId);
+        songReviewRepository.reactivateByUserId(userId);
+        commentRepository.reactivateByUserId(userId);
+        commentRepository.reactivateCommentsOnUserReviews(userId);
+    }
+
+    @Transactional
+    public void banUser(Long id) {
+        Long authenticatedUserId = AuthService.extractUserId();
+        if (authenticatedUserId.equals(id)) {
+            throw new AccessDeniedException("An administrator cannot ban themselves.");
+        }
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+        if (user.getIsBanned()) {
+            throw new IllegalStateException("User with ID: " + id + " is already banned.");
+        }
+        user.setIsBanned(true);
+        deactivateUserAccountLogic(user);
+    }
+
+    @Transactional
+    public void unbanUser(Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+        if (!user.getIsBanned()) {
+            throw new IllegalStateException("User with ID: " + id + " is not currently banned.");
+        }
+        user.setIsBanned(false);
+        reactivateUserAccountLogic(user);
     }
 }
