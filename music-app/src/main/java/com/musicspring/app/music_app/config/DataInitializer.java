@@ -140,7 +140,7 @@ public class DataInitializer {
     }
 
     private void createAdminUserIfNotExists() {
-        if (!credentialRepository.findByEmail("admin@tunecritic.com").isPresent() &&
+        if (!credentialRepository.findByEmail("admin@echoed.com").isPresent() &&
                 !userRepository.existsByUsername("admin")) {
 
             UserEntity adminUser = UserEntity.builder()
@@ -158,7 +158,7 @@ public class DataInitializer {
             }
 
             CredentialEntity credential = CredentialEntity.builder()
-                    .email("admin@tunecritic.com")
+                    .email("admin@echoed.com")
                     .password(passwordEncoder.encode(adminPassword))
                     .provider(AuthProvider.LOCAL)
                     .user(adminUser)

@@ -42,11 +42,14 @@ public class UserMapper {
         return UserProfileResponse.builder()
                 .id(user.getUserId())
                 .username(user.getUsername())
+                .email(credential != null ? credential.getEmail() : null)
                 .joinDate(user.getCreatedAt().toLocalDate().toString())
                 .biography(credential != null ? credential.getBiography() : null)
                 .profilePictureUrl(credential != null ? credential.getProfilePictureUrl() : null)
                 .roles(roleNames)
                 .permissions(permissionNames)
+                .active(user.getActive())
+                .isBanned(user.getIsBanned())
 
                 .userStats(userStats)
 

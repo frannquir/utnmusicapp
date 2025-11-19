@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .hasRole("INCOMPLETE_PROFILE")
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/{id}/ban").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/{id}/unban").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "api/v1/users").hasRole("ADMIN")
                         .requestMatchers("/api/v1/**")
                         .hasAnyRole("USER", "ADMIN")
 
