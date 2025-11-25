@@ -71,6 +71,10 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>{
     @Query("UPDATE CommentEntity c SET c.active = true WHERE c.reviewEntity.reviewId = :reviewId AND c.active = false")
     void reactivateByReviewId(@Param("reviewId") Long reviewId);
 
+    @Modifying
+    @Query("UPDATE CommentEntity c SET c.active = true WHERE c.reviewEntity.reviewId = :reviewId AND c.user.active = true AND c.user.isBanned = false")
+    void reactivateCommentByReviewId(@Param("reviewId") Long reviewId);
+
     @Query("SELECT COUNT(c) FROM CommentEntity c WHERE c.user.userId = :userId AND c.commentType = :type AND c.active = true")
     Long countCommentsByUserAndType(@Param("userId") Long userId, @Param("type") CommentType type);
 

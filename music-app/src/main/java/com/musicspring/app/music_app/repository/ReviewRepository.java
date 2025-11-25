@@ -17,6 +17,9 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Query("SELECT r FROM ReviewEntity r WHERE r.reviewId = :reviewId AND r.active = true")
     Optional<ReviewEntity> findById(@Param("reviewId") Long reviewId);
 
+    @Query("SELECT r FROM ReviewEntity r WHERE r.reviewId = :reviewId AND r.active = false")
+    Optional<ReviewEntity> findByIdInactive(Long reviewId);
+
     Page<ReviewEntity> findByUser_UserId(Long userId, Pageable pageable);
 
     Page<ReviewEntity> findByActiveTrue(Pageable pageable);
