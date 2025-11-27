@@ -2,13 +2,11 @@ package com.musicspring.app.music_app.security.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
-import com.musicspring.app.music_app.security.dto.AuthRequest;
-import com.musicspring.app.music_app.security.dto.AuthResponse;
-import com.musicspring.app.music_app.security.dto.RefreshTokenRequest;
-import com.musicspring.app.music_app.security.dto.VerifyTokenRequest;
+import com.musicspring.app.music_app.security.dto.*;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.service.AuthService;
 import com.musicspring.app.music_app.security.service.JwtService;
+import com.musicspring.app.music_app.security.service.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,9 +28,11 @@ import java.util.Map;
 @Tag(name = "Authentication", description = "Operations related to user authentication, registration, and token management")
 public class AuthController {
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @Operation(
@@ -132,6 +132,33 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of(
                 "message", "¡Account successfully verified! Please login to continue."
+        ));
+    }
+
+    @Operation(summary = "Forgot password request", description = "Sends a 6-digit code to the user's email to reset password.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password reset request sent successfully"),
+            @ApiResponse(responseCode = "404", description = "Email not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid email address", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.initiatePasswordReset(request);
+        return ResponseEntity.ok(Map.of(
+                "message", "If the email address you provided belongs to an account, you will receive a password reset link in a few minutes."
+        ));
+    }
+
+    @Operation(summary = "Reset password", description = "Resets the user's password using the provided token and new password.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired token / Password too short", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+    })
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword (@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.ok(Map.of(
+                "message", "Password successfully updated. You can now login with your new credentials."
         ));
     }
 }
