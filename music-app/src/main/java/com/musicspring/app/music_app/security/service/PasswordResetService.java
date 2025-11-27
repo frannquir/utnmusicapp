@@ -50,7 +50,8 @@ public class PasswordResetService {
 
         String token = generateRandomCode(CODE_LENGTH);
 
-        PasswordResetTokenEntity resetToken = new PasswordResetTokenEntity();
+        PasswordResetTokenEntity resetToken = tokenRepository.findByUser(user)
+                        .orElse(new PasswordResetTokenEntity());
         resetToken.setToken(token);
         resetToken.setUser(user);
         resetToken.setExpiration(LocalDateTime.now().plusMinutes(10));
