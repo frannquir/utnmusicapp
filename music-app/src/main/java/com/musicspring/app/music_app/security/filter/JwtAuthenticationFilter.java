@@ -41,22 +41,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         final String jwt = authHeader.substring(7);
-        final String username = jwtService.extractUsername(jwt);
+        String username = null;
+
+        try{
+            username = jwtService.extractUsername(jwt);
+
+        }catch (Exception e){
+            System.out.println("JWT Token invalid or malformed: " + e.getMessage());
+        }
+
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
         if (username != null && authentication == null) {
-            UserDetails userDetails =
-                    this.userDetailsService.loadUserByUsername(username);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new
-                        UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new
-                        WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                UserDetails userDetails =
+                        this.userDetailsService.loadUserByUsername(username);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new
+                            UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new
+                            WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }catch (Exception e){
+                System.out.println("Error authenticating user from token: " + e.getMessage());
             }
         }
         filterChain.doFilter(request, response);
