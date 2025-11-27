@@ -17,6 +17,7 @@ import com.musicspring.app.music_app.security.repository.CredentialRepository;
 import com.musicspring.app.music_app.security.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -42,7 +44,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final AuthMapper authMapper;
-
+    private final EmailVerificatorService emailVerificatorService;
 
     @Autowired
     public AuthService(CredentialRepository credentialsRepository,
@@ -52,7 +54,9 @@ public class AuthService {
                        UserMapper userMapper,
                        CredentialMapper credentialMapper,
                        PasswordEncoder passwordEncoder,
-                       RoleRepository roleRepository, AuthMapper authMapper) {
+                       RoleRepository roleRepository,
+                       AuthMapper authMapper,
+                       EmailVerificatorService emailVerificatorService) {
         this.credentialsRepository = credentialsRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -62,6 +66,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.authMapper = authMapper;
+        this.emailVerificatorService = emailVerificatorService;
     }
 
     @Transactional
@@ -142,38 +147,45 @@ public class AuthService {
         return authMapper.toAuthResponse(credentialEntity, newAccessToken);
     }
 
-    @Transactional
-    public AuthResponse registerUserWithEmail(SignupRequest signupRequest) {
+@Transactional
+public ResponseEntity<?> registerUserWithEmail(SignupRequest signupRequest) {
 
-        String normalizedEmail = signupRequest.getEmail().toLowerCase();
+    String normalizedEmail = signupRequest.getEmail().toLowerCase();
 
-        if (credentialsRepository.findByEmailIgnoreCase(normalizedEmail).isPresent())
-            throw new IllegalArgumentException("User already exists with email: " + signupRequest.getEmail());
+    if (credentialsRepository.findByEmailIgnoreCase(normalizedEmail).isPresent())
+        throw new IllegalArgumentException("User already exists with email: " + signupRequest.getEmail());
 
-        if (userRepository.existsByUsernameIgnoreCase(signupRequest.getUsername()))
-            throw new IllegalArgumentException("Username already taken: " + signupRequest.getUsername());
+    if (userRepository.existsByUsernameIgnoreCase(signupRequest.getUsername()))
+        throw new IllegalArgumentException("Username already taken: " + signupRequest.getUsername());
 
-        UserEntity user = userMapper.toUserEntity(signupRequest);
+    UserEntity user = userMapper.toUserEntity(signupRequest);
+    user.setActive(false);
+    user = userRepository.save(user);
 
-        user = userRepository.save(user);
+    CredentialEntity credential = credentialMapper.toCredentialEntity(signupRequest, user);
+    credential.setEmail(normalizedEmail);
+    credential.setPassword(passwordEncoder.encode(credential.getPassword()));
+    credential.setProfilePictureUrl(DefaultAvatar.getRandomAvatarFileName());
+    credential.setRoles(Set.of(roleRepository
+            .findByRole(Role.ROLE_USER)
+            .orElseThrow(() -> new EntityNotFoundException("Default role ROLE_USER not found."))));
+    credential.setRefreshToken(jwtService.generateRefreshToken(credential));
 
-        CredentialEntity credential = credentialMapper.toCredentialEntity(signupRequest, user);
+    credential.setUser(user);
+    credential = credentialsRepository.save(credential);
+    user.setCredential(credential);
 
-        credential.setEmail(normalizedEmail);
-        credential.setPassword(passwordEncoder.encode(credential.getPassword()));
-        credential.setProfilePictureUrl(DefaultAvatar.getRandomAvatarFileName());
-        credential.setRoles(Set.of(roleRepository
-                .findByRole(Role.ROLE_USER)
-                .orElseThrow(() -> new EntityNotFoundException("Default role ROLE_USER not found."))));
-
-        credential.setRefreshToken(jwtService.generateRefreshToken(credential));
-
-        credential = credentialsRepository.save(credential);
-
-        String token = jwtService.generateToken(credential);
-
-        return authMapper.toAuthResponse(credential, token);
+    try {
+        emailVerificatorService.sendVerificationEmail(user);
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException("Error sending email: " + e.getMessage());
     }
+
+    return ResponseEntity.ok(Map.of(
+            "message", "Verification email sent to: " + credential.getEmail()
+    ));
+}
 
     public static Long extractUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -199,5 +211,9 @@ public class AuthService {
     public static void validateRequestUserOwnership(Long requestedUserId) {
         Long authenticatedUserId = extractUserId();
         validateUserOwnership(authenticatedUserId, requestedUserId);
+    }
+
+    public void verifyAccount(String token) {
+        emailVerificatorService.verifyToken(token);
     }
 }

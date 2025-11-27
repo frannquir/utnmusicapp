@@ -5,6 +5,7 @@ import com.musicspring.app.music_app.model.dto.request.SignupRequest;
 import com.musicspring.app.music_app.security.dto.AuthRequest;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
 import com.musicspring.app.music_app.security.dto.RefreshTokenRequest;
+import com.musicspring.app.music_app.security.dto.VerifyTokenRequest;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.service.AuthService;
 import com.musicspring.app.music_app.security.service.JwtService;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -108,10 +111,27 @@ public class AuthController {
             )
     })
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerUserWithEmail(
-            @Parameter(description = "User registration data with username, email, and password")
+    public ResponseEntity<?> registerUserWithEmail(
             @Valid @RequestBody SignupRequest signupRequest) {
-        AuthResponse authResponse = authService.registerUserWithEmail(signupRequest);
-        return ResponseEntity.ok(authResponse);
+
+        return authService.registerUserWithEmail(signupRequest);
+    }
+
+    @Operation(
+            summary = "Verify email account",
+            description = "Activates the user account using the 6-character code sent via email."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Account verified successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid or expired token",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PostMapping("/verify")
+    public ResponseEntity<?> verifyAccount(@Valid @RequestBody VerifyTokenRequest request) {
+        authService.verifyAccount(request.token());
+
+        return ResponseEntity.ok(Map.of(
+                "message", "¡Account successfully verified! Please login to continue."
+        ));
     }
 }
