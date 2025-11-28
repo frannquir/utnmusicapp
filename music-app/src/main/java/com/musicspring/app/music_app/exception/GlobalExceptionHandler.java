@@ -148,4 +148,11 @@ public class GlobalExceptionHandler {
                 .body(ErrorDetails.from(ex.getMessage(), request.getDescription(false)));
     }
 
+    @ExceptionHandler(AccountNotVerifiedException.class)
+    public ResponseEntity<ErrorDetails> handleAccountNotVerified(AccountNotVerifiedException ex, WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.PRECONDITION_REQUIRED)
+                .body(ErrorDetails.from(ex.getMessage(), request.getDescription(false)));
+    }
+
 }
