@@ -155,7 +155,7 @@ public class UserService {
     }
 
     public Page<UserProfileResponse> searchUsers(String query, Pageable pageable) {
-        Page<UserEntity> userPage = userRepository.findByUsernameContainingIgnoreCase(query, pageable);
+        Page<UserEntity> userPage = userRepository.findByUsernameOrEmailContainingIgnoreCase(query, pageable);
         return userPage.map(userMapper::toUserProfileResponse);
     }
 

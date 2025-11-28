@@ -12,8 +12,11 @@ import java.util.Set;
 public class UserProfileResponse {
     private Long id;
     private String username;
+    private String email;
     private String biography;
     private String joinDate;
+    private Boolean active;
+    private Boolean isBanned;
     private Set<String> roles;
     private Set<String> permissions;
     private UserStatsResponse userStats;

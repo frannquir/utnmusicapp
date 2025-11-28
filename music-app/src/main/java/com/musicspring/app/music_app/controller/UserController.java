@@ -150,7 +150,6 @@ public class UserController {
     public ResponseEntity<UserProfileResponse> getUserByUsername(
             @Parameter(description = "Username to search for", example = "johndoe123")
             @PathVariable String username) {
-        // Llama al método del servicio que devuelve el perfil completo con stats
         return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
