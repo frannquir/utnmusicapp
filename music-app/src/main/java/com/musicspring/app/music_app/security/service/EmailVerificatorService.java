@@ -4,50 +4,30 @@ import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.repository.UserRepository;
 import com.musicspring.app.music_app.security.entity.EmailVerificatorTokenEntity;
 import com.musicspring.app.music_app.security.repository.EmailVerificatorTokenRepository;
+import com.musicspring.app.music_app.model.enums.BrandColors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
-import java.security.SecureRandom;
 
 @Service
-public class EmailVerificatorService {
+public class EmailVerificatorService extends AbstractEmailService {
 
-    private final JavaMailSender mailSender;
     private final EmailVerificatorTokenRepository tokenRepository;
     private final UserRepository userRepository;
-
-    @Value("${spring.mail.username}")
-    private String fromEmail;
-
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int CODE_LENGTH = 6;
 
     @Autowired
     public EmailVerificatorService(JavaMailSender mailSender,
                                    EmailVerificatorTokenRepository tokenRepository,
                                    UserRepository userRepository) {
-        this.mailSender = mailSender;
+        super(mailSender);
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
     }
 
     public void sendVerificationEmail(UserEntity user) {
-        if (user == null) {
-            throw new IllegalArgumentException("The provided user is NULL");
-        }
-        if (user.getCredential() == null) {
-            throw new IllegalStateException("Unable to send email: Credentials not found for user with ID: .");
-        }
-        if (tokenRepository == null) {
-            throw new IllegalStateException("Spring configuration failed (tokenRepository is NULL).");
-        }
-        if (mailSender == null) {
-            throw new IllegalStateException("Spring configuration failed (MailSender is NULL).");
-        }
+        if (user == null) throw new IllegalArgumentException("User is NULL");
+        if (user.getCredential() == null) throw new IllegalStateException("Credentials not found for user ID: " + user.getUserId());
 
         String token = generateRandomCode(CODE_LENGTH);
 
@@ -58,15 +38,9 @@ public class EmailVerificatorService {
 
         tokenRepository.save(emailToken);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail != null ? fromEmail : "noreply@echoed.com");
-        message.setTo(user.getCredential().getEmail());
-        message.setSubject("Email verification - Echoed");
-        message.setText("Hi " + user.getUsername()
-                + "!\n\nUse this code to verify your account: \n\n"
-                + token + "\n\nThe code expires in 10 minutes.");
+        String htmlContent = buildEmailContent(user.getUsername(), token);
+        sendHtmlEmail(user.getCredential().getEmail(), "Email verification - Echoed", htmlContent);
 
-        mailSender.send(message);
         System.out.println("Email successfully sent to: " + user.getCredential().getEmail());
     }
 
@@ -85,13 +59,65 @@ public class EmailVerificatorService {
         tokenRepository.delete(emailVerificatorTokenEntity);
     }
 
-    private String generateRandomCode(int length){
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(CHARACTERS.length());
-            sb.append(CHARACTERS.charAt(index));
-        }
-        return sb.toString();
+    private String buildEmailContent(String username, String token) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Verify Your Account</title>
+                <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+            </head>
+            <body style="font-family: 'Lato', Arial, sans-serif; background-color: %s; margin: 0; padding: 0; color: %s;">
+                <table role="presentation" width="100%%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="center" style="padding: 40px 0;">
+                            <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: %s; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden;">
+                                <tr>
+                                    <td align="center" style="background-color: %s; padding: 30px;">
+                                        <h1 style="font-family: 'Poppins', sans-serif; color: %s; margin: 0; font-size: 28px; letter-spacing: 1px; text-transform: uppercase;">ECHOED</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 40px 30px;">
+                                        <h2 style="font-family: 'Poppins', sans-serif; color: %s; margin-top: 0;">Hi %s!</h2>
+                                        <p style="color: %s; font-size: 16px; line-height: 1.6;">
+                                            Thanks for signing up with Echoed. To complete your registration and verify your account, please use the verification code below:
+                                        </p>
+                                        <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="100%%">
+                                            <tr>
+                                                <td align="center" style="padding: 30px 0;">
+                                                    <div style="border: 2px dashed %s; padding: 20px; border-radius: 8px; display: inline-block; background-color: rgba(175, 100, 45, 0.05);">
+                                                        <span style="font-size: 32px; font-weight: bold; color: %s; letter-spacing: 5px; font-family: 'Courier New', monospace;">%s</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <p style="color: %s; font-size: 14px;">
+                                            This code will expire in <strong>10 minutes</strong>. If you did not request this verification, please ignore this email.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="background-color: %s; padding: 20px; border-top: 1px solid #d7ccc8;">
+                                        <p style="color: %s; font-size: 12px; margin: 0;">
+                                            &copy; 2025 Echoed. All rights reserved.<br>
+                                            Your voice in music.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+            """.formatted(
+                BrandColors.BACKGROUND_MAIN, BrandColors.TEXT_MAIN, BrandColors.BACKGROUND_CARD,
+                BrandColors.PRIMARY, BrandColors.TEXT_ON_PRIMARY, BrandColors.PRIMARY,
+                username, BrandColors.TEXT_MAIN, BrandColors.PRIMARY, BrandColors.PRIMARY,
+                token, BrandColors.TEXT_MAIN, BrandColors.BACKGROUND_CARD, BrandColors.TEXT_SECONDARY
+        );
     }
 }
