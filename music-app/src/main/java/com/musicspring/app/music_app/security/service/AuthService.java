@@ -2,6 +2,7 @@ package com.musicspring.app.music_app.security.service;
 
 import com.musicspring.app.music_app.exception.AccountBannedException;
 import com.musicspring.app.music_app.exception.AccountDeactivatedException;
+import com.musicspring.app.music_app.exception.AccountNotVerifiedException; // <--- NUEVA EXCEPCIÓN
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.enums.DefaultAvatar;
@@ -14,14 +15,13 @@ import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
+import com.musicspring.app.music_app.security.repository.EmailVerificatorTokenRepository;
 import com.musicspring.app.music_app.security.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -42,7 +43,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final AuthMapper authMapper;
-
+    private final EmailVerificatorService emailVerificatorService;
+    private final EmailVerificatorTokenRepository emailVerificatorTokenRepository;
 
     @Autowired
     public AuthService(CredentialRepository credentialsRepository,
@@ -52,7 +54,10 @@ public class AuthService {
                        UserMapper userMapper,
                        CredentialMapper credentialMapper,
                        PasswordEncoder passwordEncoder,
-                       RoleRepository roleRepository, AuthMapper authMapper) {
+                       RoleRepository roleRepository,
+                       AuthMapper authMapper,
+                       EmailVerificatorService emailVerificatorService,
+                       EmailVerificatorTokenRepository emailVerificatorTokenRepository) {
         this.credentialsRepository = credentialsRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -62,6 +67,8 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.authMapper = authMapper;
+        this.emailVerificatorService = emailVerificatorService;
+        this.emailVerificatorTokenRepository = emailVerificatorTokenRepository;
     }
 
     @Transactional
@@ -78,7 +85,6 @@ public class AuthService {
     }
 
     public CredentialEntity authenticate(AuthRequest input) {
-
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -90,7 +96,7 @@ public class AuthService {
         } catch (BadCredentialsException e) {
             throw e;
 
-        } catch (LockedException e) {
+        } catch (LockedException | DisabledException e) {
             CredentialEntity credential = credentialsRepository
                     .findByEmailOrUsername(input.emailOrUsername())
                     .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
@@ -99,7 +105,13 @@ public class AuthService {
                 if (credential.getUser().getIsBanned()) {
                     throw new AccountBannedException("This account has been banned by an administrator.");
                 }
+
                 if (!credential.getUser().getActive()) {
+
+                    if (emailVerificatorTokenRepository.findByUser(credential.getUser()).isPresent()) {
+                        throw new AccountNotVerifiedException("Account not verified. Please check your email.");
+                    }
+
                     throw new AccountDeactivatedException(
                             "Account is deactivated",
                             credential.getUser().getUserId()
@@ -110,8 +122,12 @@ public class AuthService {
         }
 
         CredentialEntity credential = credentialsRepository.findByEmailOrUsername(input.emailOrUsername())
-                .orElseThrow(()->new UsernameNotFoundException("User not found after successful authentication"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found after successful authentication"));
+
         if (credential.getUser() != null && !credential.getUser().getActive()) {
+            if (emailVerificatorTokenRepository.findByUser(credential.getUser()).isPresent()) {
+                throw new AccountNotVerifiedException("Account not verified. Please check your email.");
+            }
             throw new AccountDeactivatedException(
                     "Account is deactivated",
                     credential.getUser().getUserId()
@@ -119,18 +135,19 @@ public class AuthService {
         }
         return credential;
     }
+
     @Transactional
     public AuthResponse refreshAccessToken(String refreshToken) {
         String username = jwtService.extractUsername(refreshToken);
 
         CredentialEntity credentialEntity = credentialsRepository.findByEmail(username)
-                .orElseThrow(()-> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if(!credentialEntity.getRefreshToken().equals(refreshToken)) {
+        if (!credentialEntity.getRefreshToken().equals(refreshToken)) {
             throw new IllegalArgumentException("Refresh token does not match");
         }
 
-        if (!jwtService.validateRefreshToken(refreshToken,credentialEntity)) {
+        if (!jwtService.validateRefreshToken(refreshToken, credentialEntity)) {
             throw new IllegalArgumentException("Invalid or expired refresh token");
         }
 
@@ -138,12 +155,12 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(credentialEntity);
         credentialEntity.setRefreshToken(newRefreshToken);
         credentialsRepository.save(credentialEntity);
-      
+
         return authMapper.toAuthResponse(credentialEntity, newAccessToken);
     }
 
     @Transactional
-    public AuthResponse registerUserWithEmail(SignupRequest signupRequest) {
+    public ResponseEntity<?> registerUserWithEmail(SignupRequest signupRequest) {
 
         String normalizedEmail = signupRequest.getEmail().toLowerCase();
 
@@ -154,25 +171,32 @@ public class AuthService {
             throw new IllegalArgumentException("Username already taken: " + signupRequest.getUsername());
 
         UserEntity user = userMapper.toUserEntity(signupRequest);
-
+        user.setActive(false);
         user = userRepository.save(user);
 
         CredentialEntity credential = credentialMapper.toCredentialEntity(signupRequest, user);
-
         credential.setEmail(normalizedEmail);
         credential.setPassword(passwordEncoder.encode(credential.getPassword()));
         credential.setProfilePictureUrl(DefaultAvatar.getRandomAvatarFileName());
         credential.setRoles(Set.of(roleRepository
                 .findByRole(Role.ROLE_USER)
                 .orElseThrow(() -> new EntityNotFoundException("Default role ROLE_USER not found."))));
-
         credential.setRefreshToken(jwtService.generateRefreshToken(credential));
 
+        credential.setUser(user);
         credential = credentialsRepository.save(credential);
+        user.setCredential(credential);
 
-        String token = jwtService.generateToken(credential);
+        try {
+            emailVerificatorService.sendVerificationEmail(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
 
-        return authMapper.toAuthResponse(credential, token);
+        return ResponseEntity.ok(Map.of(
+                "message", "Verification email sent to: " + credential.getEmail()
+        ));
     }
 
     public static Long extractUserId() {
@@ -199,5 +223,9 @@ public class AuthService {
     public static void validateRequestUserOwnership(Long requestedUserId) {
         Long authenticatedUserId = extractUserId();
         validateUserOwnership(authenticatedUserId, requestedUserId);
+    }
+
+    public void verifyAccount(String token) {
+        emailVerificatorService.verifyToken(token);
     }
 }
