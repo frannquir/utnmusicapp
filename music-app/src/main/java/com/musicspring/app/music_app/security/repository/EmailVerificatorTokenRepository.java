@@ -5,6 +5,7 @@ import com.musicspring.app.music_app.security.entity.EmailVerificatorTokenEntity
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +14,6 @@ public interface EmailVerificatorTokenRepository extends JpaRepository<EmailVeri
     Optional<EmailVerificatorTokenEntity> findByToken(String token);
 
     Optional<EmailVerificatorTokenEntity> findByUser(UserEntity user);
+
+    void deleteByExpirationBefore(LocalDateTime now);
 }
