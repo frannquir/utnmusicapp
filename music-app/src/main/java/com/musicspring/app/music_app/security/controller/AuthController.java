@@ -135,6 +135,18 @@ public class AuthController {
         ));
     }
 
+    @Operation(summary = "Resend verification code", description = "Generates and sends a new 6-digit code to the user's email.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Code resent successfully"),
+            @ApiResponse(responseCode = "400", description = "Account already verified or wait required"),
+            @ApiResponse(responseCode = "404", description = "Email not found")
+    })
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        authService.resendVerificationCode(request.email());
+        return ResponseEntity.ok(Map.of("message", "New verification code sent to your email."));
+    }
+
     @Operation(summary = "Forgot password request", description = "Sends a 6-digit code to the user's email to reset password.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Password reset request sent successfully"),

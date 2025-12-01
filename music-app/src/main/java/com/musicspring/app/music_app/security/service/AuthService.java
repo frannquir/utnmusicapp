@@ -12,6 +12,7 @@ import com.musicspring.app.music_app.repository.UserRepository;
 import com.musicspring.app.music_app.security.dto.AuthRequest;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
+import com.musicspring.app.music_app.security.entity.EmailVerificatorTokenEntity;
 import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
@@ -29,7 +30,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -227,5 +230,26 @@ public class AuthService {
 
     public void verifyAccount(String token) {
         emailVerificatorService.verifyToken(token);
+    }
+    @Transactional
+    public void resendVerificationCode(String email) {
+        CredentialEntity credential = credentialsRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with this email."));
+
+        UserEntity user = credential.getUser();
+
+        if (user.getActive()) {
+            throw new IllegalStateException("Account is already verified.");
+        }
+         
+        Optional<EmailVerificatorTokenEntity> existingToken = emailVerificatorTokenRepository.findByUser(user);
+        if (existingToken.isPresent()) {
+            EmailVerificatorTokenEntity token = existingToken.get();
+            if (token.getExpiration().isAfter(LocalDateTime.now().plusMinutes(9))) {
+                throw new IllegalStateException("Please wait a minute before requesting a new code.");
+            }
+        }
+
+        emailVerificatorService.sendVerificationEmail(user);
     }
 }

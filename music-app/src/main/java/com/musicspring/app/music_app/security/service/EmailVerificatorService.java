@@ -31,9 +31,13 @@ public class EmailVerificatorService extends AbstractEmailService {
 
         String token = generateRandomCode(CODE_LENGTH);
 
-        EmailVerificatorTokenEntity emailToken = new EmailVerificatorTokenEntity();
+        EmailVerificatorTokenEntity emailToken = tokenRepository.findByUser(user)
+                .orElse(new EmailVerificatorTokenEntity());
+
+        if (emailToken.getId() == null) {
+            emailToken.setUser(user);
+        }
         emailToken.setToken(token);
-        emailToken.setUser(user);
         emailToken.setExpiration(LocalDateTime.now().plusMinutes(10));
 
         tokenRepository.save(emailToken);
