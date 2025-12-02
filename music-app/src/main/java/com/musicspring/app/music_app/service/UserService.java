@@ -12,6 +12,7 @@ import com.musicspring.app.music_app.security.dto.DeactivateAccountRequest;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.entity.RoleEntity;
 import com.musicspring.app.music_app.security.enums.AuthProvider;
+import com.musicspring.app.music_app.security.enums.EmailType;
 import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
@@ -155,7 +156,7 @@ public class UserService {
         if (user.getIsBanned()) {
             throw new AccessDeniedException("Account is banned by an administrator and cannot be reactivated.");
         }
-        emailVerificatorService.sendVerificationEmail(user);
+        emailVerificatorService.sendVerificationEmail(user, EmailType.REACTIVATION);
     }
 
     @Transactional

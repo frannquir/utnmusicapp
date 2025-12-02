@@ -41,10 +41,21 @@ public class PasswordResetService extends AbstractEmailService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         UserEntity user = credential.getUser();
+
+
+        java.util.Optional<PasswordResetTokenEntity> existingToken = tokenRepository.findByUser(user);
+
+        if (existingToken.isPresent()) {
+            PasswordResetTokenEntity token = existingToken.get();
+            if (token.getExpiration().isAfter(LocalDateTime.now().plusMinutes(9))) {
+                throw new IllegalStateException("Please wait a minute before requesting a new code.");
+            }
+        }
+
         String token = generateRandomCode(CODE_LENGTH);
 
-        PasswordResetTokenEntity resetToken = tokenRepository.findByUser(user)
-                .orElse(new PasswordResetTokenEntity());
+        PasswordResetTokenEntity resetToken = existingToken.orElse(new PasswordResetTokenEntity());
+
         resetToken.setToken(token);
         resetToken.setUser(user);
         resetToken.setExpiration(LocalDateTime.now().plusMinutes(10));

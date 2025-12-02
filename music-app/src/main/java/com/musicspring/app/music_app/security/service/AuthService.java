@@ -13,6 +13,7 @@ import com.musicspring.app.music_app.security.dto.AuthRequest;
 import com.musicspring.app.music_app.security.dto.AuthResponse;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.entity.EmailVerificatorTokenEntity;
+import com.musicspring.app.music_app.security.enums.EmailType;
 import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
@@ -191,7 +192,7 @@ public class AuthService {
         user.setCredential(credential);
 
         try {
-            emailVerificatorService.sendVerificationEmail(user);
+            emailVerificatorService.sendVerificationEmail(user,EmailType.REGISTRATION);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error sending email: " + e.getMessage());
@@ -250,6 +251,6 @@ public class AuthService {
             }
         }
 
-        emailVerificatorService.sendVerificationEmail(user);
+        emailVerificatorService.sendVerificationEmail(user, EmailType.REGISTRATION);
     }
 }
