@@ -26,7 +26,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT u FROM UserEntity u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%')) AND u.active = true")
     Page<UserEntity> findByUsernameContainingIgnoreCase(@Param("username") String username, Pageable pageable);
 
-    @Query("SELECT u FROM UserEntity u JOIN FETCH u.credential c WHERE (LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%'))) AND u.active = true")
+    @Query("SELECT u FROM UserEntity u JOIN FETCH u.credential c WHERE (LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')))")
     Page<UserEntity> findByUsernameOrEmailContainingIgnoreCase(@Param("query") String query, Pageable pageable);
 
     @Query(value = """
@@ -42,8 +42,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     """, nativeQuery = true)
     Double calculateUserAverageRating(@Param("userId") Long userId);
 
-    @Query("SELECT u FROM UserEntity u WHERE u.active = true")
     List<UserEntity> findAll();
+
+    @Query("SELECT u FROM UserEntity u WHERE u.active = true")
+    List<UserEntity> findAllActiveUsers();
 
     @Query("SELECT u FROM UserEntity u WHERE u.userId = :userId AND u.active = false")
     Optional<UserEntity> findByIdAndActiveFalse(@Param("userId") Long userId);

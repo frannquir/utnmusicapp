@@ -72,6 +72,38 @@ public class UserController {
     }
 
     @Operation(
+            summary = "Get all active users",
+            description = "Retrieves a list of all active registered users in the system, returning their full profiles."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Active users retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = List.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @GetMapping("/active")
+    public ResponseEntity<List<UserProfileResponse>> getAllActiveUsers() {
+        return ResponseEntity.ok(userService.getAllActiveUsers());
+    }
+
+    @Operation(
             summary = "Get a user by ID",
             description = "Retrieves the full user profile (including stats) using their internal unique identifier."
     )
