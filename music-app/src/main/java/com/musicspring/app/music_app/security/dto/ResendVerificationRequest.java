@@ -9,5 +9,11 @@ public record ResendVerificationRequest(
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")
         @Schema(example = "user@example.com")
-        String email
+        String email,
+        @Schema(
+                description = "The context of the resend request. Values: 'VERIFICATION' (default) or 'PASSWORD_RESET'",
+                example = "VERIFICATION",
+                defaultValue = "VERIFICATION"
+        )
+        String flow
 ) {}

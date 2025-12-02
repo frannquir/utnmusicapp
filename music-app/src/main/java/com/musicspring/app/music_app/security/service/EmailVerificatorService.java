@@ -3,29 +3,33 @@ package com.musicspring.app.music_app.security.service;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.repository.UserRepository;
 import com.musicspring.app.music_app.security.entity.EmailVerificatorTokenEntity;
+import com.musicspring.app.music_app.security.enums.EmailType;
 import com.musicspring.app.music_app.security.repository.EmailVerificatorTokenRepository;
 import com.musicspring.app.music_app.model.enums.BrandColors;
+import com.musicspring.app.music_app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 
 @Service
 public class EmailVerificatorService extends AbstractEmailService {
 
     private final EmailVerificatorTokenRepository tokenRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Autowired
     public EmailVerificatorService(JavaMailSender mailSender,
                                    EmailVerificatorTokenRepository tokenRepository,
-                                   UserRepository userRepository) {
+                                   @Lazy UserService userService) {
         super(mailSender);
         this.tokenRepository = tokenRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
-
-    public void sendVerificationEmail(UserEntity user) {
+    public void sendVerificationEmail(UserEntity user, EmailType type) {
         if (user == null) throw new IllegalArgumentException("User is NULL");
         if (user.getCredential() == null) throw new IllegalStateException("Credentials not found for user ID: " + user.getUserId());
 
@@ -42,12 +46,27 @@ public class EmailVerificatorService extends AbstractEmailService {
 
         tokenRepository.save(emailToken);
 
-        String htmlContent = buildEmailContent(user.getUsername(), token);
-        sendHtmlEmail(user.getCredential().getEmail(), "Email verification - Echoed", htmlContent);
+        String subject;
+        String title;
+        String messageBody;
 
-        System.out.println("Email successfully sent to: " + user.getCredential().getEmail());
+        if (type == EmailType.REACTIVATION) {
+            subject = "Reactivate your Account - Echoed";
+            title = "Welcome back, " + user.getUsername() + "!";
+            messageBody = "We received a request to reactivate your account. Please use the verification code below to restore your access and recover your profile data.";
+        } else {
+            subject = "Email verification - Echoed";
+            title = "Hi " + user.getUsername() + "!";
+            messageBody = "Thanks for signing up with Echoed. To complete your registration and verify your account, please use the verification code below:";
+        }
+
+        String htmlContent = buildEmailContent(title, messageBody, token);
+
+        sendHtmlEmail(user.getCredential().getEmail(), subject, htmlContent);
+
+        System.out.println("Email sent (" + type + ") to: " + user.getCredential().getEmail());
     }
-
+    @Transactional
     public void verifyToken(String token) {
         EmailVerificatorTokenEntity emailVerificatorTokenEntity = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
@@ -57,13 +76,13 @@ public class EmailVerificatorService extends AbstractEmailService {
         }
 
         UserEntity user = emailVerificatorTokenEntity.getUser();
-        user.setActive(true);
-        userRepository.save(user);
+        userService.performReactivation(user);
 
         tokenRepository.delete(emailVerificatorTokenEntity);
     }
 
-    private String buildEmailContent(String username, String token) {
+
+    private String buildEmailContent(String title, String messageBody, String token) {
         return """
             <!DOCTYPE html>
             <html>
@@ -85,10 +104,12 @@ public class EmailVerificatorService extends AbstractEmailService {
                                 </tr>
                                 <tr>
                                     <td style="padding: 40px 30px;">
-                                        <h2 style="font-family: 'Poppins', sans-serif; color: %s; margin-top: 0;">Hi %s!</h2>
+                                        <h2 style="font-family: 'Poppins', sans-serif; color: %s; margin-top: 0;">%s</h2>
+                                        
                                         <p style="color: %s; font-size: 16px; line-height: 1.6;">
-                                            Thanks for signing up with Echoed. To complete your registration and verify your account, please use the verification code below:
+                                            %s
                                         </p>
+                                        
                                         <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="100%%">
                                             <tr>
                                                 <td align="center" style="padding: 30px 0;">
@@ -118,10 +139,14 @@ public class EmailVerificatorService extends AbstractEmailService {
             </body>
             </html>
             """.formatted(
-                BrandColors.BACKGROUND_MAIN, BrandColors.TEXT_MAIN, BrandColors.BACKGROUND_CARD,
-                BrandColors.PRIMARY, BrandColors.TEXT_ON_PRIMARY, BrandColors.PRIMARY,
-                username, BrandColors.TEXT_MAIN, BrandColors.PRIMARY, BrandColors.PRIMARY,
-                token, BrandColors.TEXT_MAIN, BrandColors.BACKGROUND_CARD, BrandColors.TEXT_SECONDARY
+                BrandColors.BACKGROUND_MAIN, BrandColors.TEXT_MAIN, // Body styles
+                BrandColors.BACKGROUND_CARD, // Card background
+                BrandColors.PRIMARY, BrandColors.TEXT_ON_PRIMARY, // Header background & Text
+                BrandColors.PRIMARY, title, // H2 Color & Dynamic Title
+                BrandColors.TEXT_MAIN, messageBody, // P Color & Dynamic Body
+                BrandColors.PRIMARY, BrandColors.PRIMARY, token, // Code box styles & Token
+                BrandColors.TEXT_MAIN, // Expiration warning color
+                BrandColors.BACKGROUND_CARD, BrandColors.TEXT_SECONDARY // Footer styles
         );
     }
 }

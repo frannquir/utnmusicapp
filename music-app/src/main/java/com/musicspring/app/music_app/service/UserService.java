@@ -12,12 +12,14 @@ import com.musicspring.app.music_app.security.dto.DeactivateAccountRequest;
 import com.musicspring.app.music_app.security.entity.CredentialEntity;
 import com.musicspring.app.music_app.security.entity.RoleEntity;
 import com.musicspring.app.music_app.security.enums.AuthProvider;
+import com.musicspring.app.music_app.security.enums.EmailType;
 import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
 import com.musicspring.app.music_app.model.mapper.UserMapper;
 import com.musicspring.app.music_app.security.repository.RoleRepository;
 import com.musicspring.app.music_app.security.service.AuthService;
+import com.musicspring.app.music_app.security.service.EmailVerificatorService;
 import com.musicspring.app.music_app.security.service.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,7 @@ public class UserService {
     private final JwtService jwtService;
     private final AuthMapper authMapper;
     private final RoleRepository roleRepository;
+    private final EmailVerificatorService emailVerificatorService;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -65,7 +68,7 @@ public class UserService {
                        StatisticService statisticService,
                        JwtService jwtService,
                        AuthMapper authMapper,
-                       RoleRepository roleRepository) {
+                       RoleRepository roleRepository, EmailVerificatorService emailVerificatorService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.credentialRepository = credentialRepository;
@@ -80,6 +83,7 @@ public class UserService {
         this.jwtService = jwtService;
         this.authMapper = authMapper;
         this.roleRepository = roleRepository;
+        this.emailVerificatorService = emailVerificatorService;
     }
 
 
@@ -145,13 +149,24 @@ public class UserService {
     }
 
     @Transactional
-    public void reactivateUser(Long id) {
-        UserEntity user = userRepository.findByIdAndActiveFalse(id).orElseThrow(()
-                -> new EntityNotFoundException("User with ID: " + id + " was not found."));
+    public void requestReactivation(Long userId) {
+        UserEntity user = userRepository.findByIdAndActiveFalse(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Inactive user with ID: " + userId + " not found."));
+
         if (user.getIsBanned()) {
-            throw new AccessDeniedException("This account is banned by an administrator and cannot be reactivated.");
+            throw new AccessDeniedException("Account is banned by an administrator and cannot be reactivated.");
         }
+        emailVerificatorService.sendVerificationEmail(user, EmailType.REACTIVATION);
+    }
+
+    @Transactional
+    public void performReactivation(UserEntity user) {
+        if (user.getActive()) return;
         reactivateUserAccountLogic(user);
+    }
+    @Transactional
+    public void reactivateUser(Long id) {
+        requestReactivation(id);
     }
 
     public Page<UserProfileResponse> searchUsers(String query, Pageable pageable) {
