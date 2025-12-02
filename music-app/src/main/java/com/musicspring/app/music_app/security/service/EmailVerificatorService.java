@@ -5,24 +5,28 @@ import com.musicspring.app.music_app.repository.UserRepository;
 import com.musicspring.app.music_app.security.entity.EmailVerificatorTokenEntity;
 import com.musicspring.app.music_app.security.repository.EmailVerificatorTokenRepository;
 import com.musicspring.app.music_app.model.enums.BrandColors;
+import com.musicspring.app.music_app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 
 @Service
 public class EmailVerificatorService extends AbstractEmailService {
 
     private final EmailVerificatorTokenRepository tokenRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Autowired
     public EmailVerificatorService(JavaMailSender mailSender,
                                    EmailVerificatorTokenRepository tokenRepository,
-                                   UserRepository userRepository) {
+                                   @Lazy UserService userService) {
         super(mailSender);
         this.tokenRepository = tokenRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     public void sendVerificationEmail(UserEntity user) {
@@ -48,6 +52,7 @@ public class EmailVerificatorService extends AbstractEmailService {
         System.out.println("Email successfully sent to: " + user.getCredential().getEmail());
     }
 
+    @Transactional
     public void verifyToken(String token) {
         EmailVerificatorTokenEntity emailVerificatorTokenEntity = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
@@ -57,8 +62,7 @@ public class EmailVerificatorService extends AbstractEmailService {
         }
 
         UserEntity user = emailVerificatorTokenEntity.getUser();
-        user.setActive(true);
-        userRepository.save(user);
+        userService.performReactivation(user);
 
         tokenRepository.delete(emailVerificatorTokenEntity);
     }

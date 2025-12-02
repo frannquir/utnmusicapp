@@ -307,8 +307,8 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Reactivate a user by ID",
-            description = "Logically reactivates a user's *self-deactivated* account. This will fail with a 403 Forbidden error if the account is banned by an admin."
+            summary = "Request account reactivation",
+            description = "Sends a verification email."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204",
@@ -338,11 +338,11 @@ public class UserController {
             )
     })
     @PutMapping("/{id}/reactivate")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void reactivateUser(
-            @Parameter(description = "Internal user ID", example = "1")
-            @PathVariable Long id) {
-        userService.reactivateUser(id);
+    public ResponseEntity<?> reactivateUser(@PathVariable Long id) {
+        userService.requestReactivation(id);
+        return ResponseEntity.ok(java.util.Map.of(
+                "message", "Verification code sent to your email."
+        ));
     }
 
     @Operation(

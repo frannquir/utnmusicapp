@@ -146,7 +146,7 @@ public class CustomOAuth2UserService extends OidcUserService {
             credential.setProviderId(googleId);
 
             if(credential.getUser() != null && !credential.getUser().getActive()){
-                userService.reactivateUser(credential.getUser().getUserId());
+                userService.performReactivation(credential.getUser());
 
                 credential = credentialRepository.findByEmailIgnoreCase(normalizedEmail)
                         .orElseThrow(() -> new OAuth2AuthenticationException("Failed to refetch reactivated user."));
