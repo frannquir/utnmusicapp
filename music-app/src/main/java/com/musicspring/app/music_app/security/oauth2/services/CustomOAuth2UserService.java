@@ -131,11 +131,7 @@ public class CustomOAuth2UserService extends OidcUserService {
             UserEntity user = credential.getUser();
             if (user != null) {
                 if (user.getIsBanned()) {
-
                     throw new AccountBannedException("This account has been banned by an administrator.");
-                }
-                if (!user.getActive()) {
-                    throw new AccountDeactivatedException("Account is deactivated", user.getUserId());
                 }
             }
 
@@ -145,11 +141,9 @@ public class CustomOAuth2UserService extends OidcUserService {
 
             credential.setProviderId(googleId);
 
-            if(credential.getUser() != null && !credential.getUser().getActive()){
+            if (credential.getUser() != null && !credential.getUser().getActive()) {
                 userService.performReactivation(credential.getUser());
-
-                credential = credentialRepository.findByEmailIgnoreCase(normalizedEmail)
-                        .orElseThrow(() -> new OAuth2AuthenticationException("Failed to refetch reactivated user."));
+                credential.getUser().setActive(true);
             }
 
             if (credential.getRefreshToken() == null) {
