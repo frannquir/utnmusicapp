@@ -87,6 +87,12 @@ public class UserService {
     }
 
 
+    public List<UserProfileResponse> getAllActiveUsers() {
+        return userRepository.findAllActiveUsers().stream()
+                .map(userMapper::toUserProfileResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<UserProfileResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(userMapper::toUserProfileResponse)
