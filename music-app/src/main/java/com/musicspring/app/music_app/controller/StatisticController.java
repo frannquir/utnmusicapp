@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("api/v1/stats")
+@RequestMapping("/api/v1/stats")
 @Tag(name = "Stats", description = "Endpoints related to stats for songs, albums and artists")
 public class StatisticController {
 
@@ -258,5 +258,48 @@ public class StatisticController {
             @RequestParam(defaultValue = "0") int pageNumber){
         Pageable pageable = PageRequest.of(pageNumber, size);
         return ResponseEntity.ok(statisticService.getMostReviewedArtists(pageable));
+    }
+
+    @Operation(
+            summary = "[ADMIN] Get dashboard statistics",
+            description = "Retrieves comprehensive dashboard statistics including user counts, content statistics, and reaction breakdowns. This endpoint is restricted to users with the ADMIN role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Dashboard stats retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = com.musicspring.app.music_app.model.dto.response.AdminDashboardResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication is required to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden: Requires ADMIN role to access this resource.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDetails.class)
+                    )
+            )
+    })
+    @GetMapping("/admin/dashboard")
+    public ResponseEntity<com.musicspring.app.music_app.model.dto.response.AdminDashboardResponse> getAdminDashboard() {
+        return ResponseEntity.ok(statisticService.getAdminDashboard());
     }
 }

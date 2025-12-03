@@ -73,4 +73,6 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
 
     @Query("SELECT COUNT(r) FROM ReactionEntity r WHERE r.user.userId = :userId AND r.createdAt >= :startOfMonth")
     Long countReactionsThisMonth(@Param("userId") Long userId, @Param("startOfMonth") LocalDateTime startOfMonth);
+
+    Long countByReactionType(ReactionType reactionType);
 }
