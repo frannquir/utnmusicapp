@@ -93,10 +93,9 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserProfileResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserProfileResponse)
-                .collect(Collectors.toList());
+    public Page<UserProfileResponse> getAllUsers(Pageable pageable) {
+        Page<UserEntity> userPage = userRepository.findAll(pageable);
+        return userPage.map(userMapper::toUserProfileResponse);
     }
 
 
