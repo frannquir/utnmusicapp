@@ -1,6 +1,7 @@
 package com.musicspring.app.music_app.controller;
 
 import com.musicspring.app.music_app.exception.ErrorDetails;
+import com.musicspring.app.music_app.model.dto.response.AdminDashboardResponse;
 import com.musicspring.app.music_app.model.dto.response.AlbumResponse;
 import com.musicspring.app.music_app.model.dto.response.ArtistResponse;
 import com.musicspring.app.music_app.model.dto.response.SongResponse;
@@ -258,5 +259,16 @@ public class StatisticController {
             @RequestParam(defaultValue = "0") int pageNumber){
         Pageable pageable = PageRequest.of(pageNumber, size);
         return ResponseEntity.ok(statisticService.getMostReviewedArtists(pageable));
+    }
+
+    @Operation(summary = "[ADMIN] Get dashboard statistics")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Dashboard stats retrieved"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated"),
+        @ApiResponse(responseCode = "403", description = "Requires ADMIN role")
+    })
+    @GetMapping("/admin/dashboard")
+    public ResponseEntity<AdminDashboardResponse> getAdminDashboard() {
+        return ResponseEntity.ok(statisticService.getAdminDashboard());
     }
 }
