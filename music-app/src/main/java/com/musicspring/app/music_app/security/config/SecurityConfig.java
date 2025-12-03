@@ -51,6 +51,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/v1/stats/admin/**").hasRole("ADMIN")
                         .requestMatchers("api/v1/admin/**").hasRole("ADMIN")
 
                         .requestMatchers("/api/v1/auth/**",
