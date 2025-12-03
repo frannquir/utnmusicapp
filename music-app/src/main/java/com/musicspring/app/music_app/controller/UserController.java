@@ -41,14 +41,14 @@ public class UserController {
 
     @Operation(
             summary = "Get all users",
-            description = "Retrieves a list of all registered users in the system, returning their full profiles."
+            description = "Retrieves a paginated list of all registered users in the system (active, inactive, banned, not banned), returning their full profiles."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Users retrieved successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = List.class)
+                            schema = @Schema(implementation = Page.class)
                     )
             ),
             @ApiResponse(responseCode = "401",
@@ -67,8 +67,10 @@ public class UserController {
             )
     })
     @GetMapping("")
-    public ResponseEntity<List<UserProfileResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Page<UserProfileResponse>> getAllUsers(
+            @Parameter(hidden = true)
+            Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
     @Operation(
