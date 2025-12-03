@@ -118,4 +118,37 @@ public class StatisticService {
                 reviewsThisMonth, commentsThisMonth, reactionsThisMonth
         );
     }
+
+    public AdminDashboardResponse getAdminDashboard() {
+        Long totalUsers = userRepository.count();
+        Long activeUsers = userRepository.countByActiveTrue();
+        Long bannedUsers = userRepository.countByIsBannedTrue();
+
+        Long totalReviews = reviewRepository.count();
+        Long totalComments = commentRepository.countByActiveTrue();
+        Long totalReactions = reactionRepository.count();
+
+        Long albumReviews = albumReviewRepository.count();
+        Long songReviews = songReviewRepository.count();
+
+        Long likes = reactionRepository.countByReactionType(ReactionType.LIKE);
+        Long loves = reactionRepository.countByReactionType(ReactionType.LOVE);
+        Long wows = reactionRepository.countByReactionType(ReactionType.WOW);
+        Long dislikes = reactionRepository.countByReactionType(ReactionType.DISLIKE);
+
+        return AdminDashboardResponse.builder()
+                .totalUsers(totalUsers)
+                .activeUsers(activeUsers)
+                .bannedUsers(bannedUsers)
+                .totalReviews(totalReviews)
+                .totalComments(totalComments)
+                .totalReactions(totalReactions)
+                .albumReviews(albumReviews)
+                .songReviews(songReviews)
+                .likesCount(likes)
+                .lovesCount(loves)
+                .wowsCount(wows)
+                .dislikesCount(dislikes)
+                .build();
+    }
 }
