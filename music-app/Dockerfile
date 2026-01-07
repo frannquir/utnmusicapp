@@ -1,12 +1,12 @@
-FROM amazoncorretto:21
+FROM amazoncorretto:21-alpine-jdk AS build
 
 WORKDIR /app
 
 COPY . .
 
-RUN chmod +x mvnw
-RUN ./mvnw clean package -DskipTests
+FROM amazoncorretto:21-alpine-jdk
+WORKDIR /app
 
-EXPOSE 10000
+COPY --from=build /app/target/*.jar app.jar
 
-CMD java -jar target/*.jar --server.port=10000
+CMD ["java", "-Dserver.port=${PORT}", "-jar", "app.jar"]
