@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY . .
 
+RUN mvn clean package -DskipTests
+
 FROM amazoncorretto:21-alpine-jdk
 WORKDIR /app
 
