@@ -23,6 +23,12 @@ public abstract class AbstractEmailService {
     }
 
     protected void sendHtmlEmail(String to, String subject, String htmlContent) {
+        System.out.println("===== EMAIL SIMULATION =====");
+        System.out.println("To: " + to);
+        System.out.println("Subject: " + subject);
+        System.out.println("Content: " + htmlContent);
+        System.out.println("============================");
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -35,8 +41,10 @@ public abstract class AbstractEmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send email to " + to, e);
+            System.out.println("✅ Email sent successfully to " + to);
+
+        } catch (Exception e) {
+            System.err.println("⚠️ ERROR SENDING EMAIL (Ignored to allow registration): " + e.getMessage());
         }
     }
 
