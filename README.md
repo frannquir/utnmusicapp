@@ -52,6 +52,7 @@ A comprehensive music social platform developed by UTN students. This applicatio
 🏗️ Architecture & Design Decisions
 
 1. **Fail-Safe Email Service** 📧
+
 Due to strict SMTP port restrictions (blocking ports 587/465) on free cloud infrastructure tiers (e.g., Render), a "Fail-Safe" strategy was implemented in the AbstractEmailService.
 
 - **Behavior**: The system attempts to send verification emails via SMTP. If the connection times out due to the firewall, the exception is caught, and the verification token is securely logged in the server console.
