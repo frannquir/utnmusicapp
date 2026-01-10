@@ -59,6 +59,7 @@ Due to strict SMTP port restrictions (blocking ports 587/465) on free cloud infr
 - **Rationale**: This ensures the **User Registration Transaction** is never rolled back due to infrastructure limitations, prioritizing User Experience (UX) and database integrity over external service availability.
 
 2. **Security & Token Management** 🔐
+
 The application uses a dual-token system for maximum security:
 
 - **Access Token**: Short-lived JWT for API access.
