@@ -108,14 +108,16 @@ src/main/java/com/musicspring/app/music_app/
 
 Create a .env file or configure your IDE/Cloud provider with the following:
 
-Variable	      Description
-DB_URL	        JDBC URL (e.g., jdbc:postgresql://localhost:5432/musicdb)
-DB_USERNAME	    Database username
-DB_PASSWORD	    Database password
-JWT_SECRET	    Secure 256-bit key for signing tokens
-GOOGLE_CLIENT_ID	OAuth2 Client ID from Google Cloud Console
-GOOGLE_CLIENT_SECRET	OAuth2 Client Secret
-APP_OAUTH2_REDIRECT_URI	Frontend URL to redirect after login (e.g., http://localhost:4200/oauth2/redirect)
+| Variable                  | Descripción                                                                 |
+|---------------------------|-----------------------------------------------------------------------------|
+| DB_URL                    | JDBC URL (ej: `jdbc:postgresql://localhost:5432/musicdb`)                   |
+| DB_USERNAME               | Usuario de la base de datos                                                  |
+| DB_PASSWORD               | Contraseña de la base de datos                                               |
+| JWT_SECRET                | Clave segura de 256 bits para firmar los tokens JWT                          |
+| GOOGLE_CLIENT_ID           | OAuth2 Client ID obtenido desde Google Cloud Console                         |
+| GOOGLE_CLIENT_SECRET       | OAuth2 Client Secret obtenido desde Google Cloud Console                     |
+| APP_OAUTH2_REDIRECT_URI    | URL del frontend a la que se redirige luego del login (ej: `http://localhost:4200/oauth2/redirect`) |
+
 
 
 ## 📚 API Documentation
