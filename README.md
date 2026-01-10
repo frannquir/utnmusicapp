@@ -118,6 +118,16 @@ Create a .env file or configure your IDE/Cloud provider with the following:
 | GOOGLE_CLIENT_SECRET       | OAuth2 Client Secret obtenido desde Google Cloud Console                     |
 | APP_OAUTH2_REDIRECT_URI    | URL del frontend a la que se redirige luego del login (ej: `http://localhost:4200/oauth2/redirect`) |
 
+### Running the App
+
+# Clone the repo
+git clone https://github.com/your-username/utnmusicapp.git
+
+# Build with Maven
+mvn clean install
+
+# Run
+mvn spring-boot:run
 
 
 ## 📚 API Documentation
