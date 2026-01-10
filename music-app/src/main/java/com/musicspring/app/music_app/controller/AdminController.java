@@ -14,11 +14,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin")
 @Tag(name = "Admin", description = "Administrative operations")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final ReviewService reviewService;
 
