@@ -120,13 +120,13 @@ Create a .env file or configure your IDE/Cloud provider with the following:
 
 ### Running the App
 
-# Clone the repo
+1. Clone the repo
 git clone https://github.com/your-username/utnmusicapp.git
 
-# Build with Maven
+2. Build with Maven
 mvn clean install
 
-# Run
+3. Run
 mvn spring-boot:run
 
 
