@@ -11,4 +11,4 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
-CMD ["java", "-Xmx350m", "-Dserver.port=${PORT}", "-jar", "app.jar"]
+CMD ["java", "-Xmx256m", "-Dserver.port=${PORT}", "-jar", "app.jar"]
