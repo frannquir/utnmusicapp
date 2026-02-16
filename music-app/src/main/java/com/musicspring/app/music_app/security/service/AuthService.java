@@ -175,7 +175,7 @@ public class AuthService {
             throw new IllegalArgumentException("Username already taken: " + signupRequest.getUsername());
 
         UserEntity user = userMapper.toUserEntity(signupRequest);
-        user.setActive(true);
+        user.setActive(false);
         user = userRepository.save(user);
 
         CredentialEntity credential = credentialMapper.toCredentialEntity(signupRequest, user);
@@ -191,15 +191,15 @@ public class AuthService {
         credential = credentialsRepository.save(credential);
         user.setCredential(credential);
 
-//        try {
-//            emailVerificatorService.sendVerificationEmail(user,EmailType.REGISTRATION);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("Error sending email: " + e.getMessage());
-//        }
+        try {
+            emailVerificatorService.sendVerificationEmail(user,EmailType.REGISTRATION);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
 
         return ResponseEntity.ok(Map.of(
-                "message", "User registered successfully. Please login."
+                "message", "Verification email sent to: " + credential.getEmail()
         ));
     }
 
