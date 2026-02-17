@@ -39,6 +39,7 @@ public class SongReviewService {
     private final ReactionRepository reactionRepository;
     private final ReactionMapper reactionMapper;
     private final CommentRepository commentRepository;
+    private final ReviewRepository reviewRepository;
 
     @Autowired
     public SongReviewService(SongReviewRepository songReviewRepository,
@@ -53,7 +54,7 @@ public class SongReviewService {
                              ArtistRepository artistRepository,
                              ReactionRepository reactionRepository,
                              ReactionMapper reactionMapper,
-                             CommentRepository commentRepository) {
+                             CommentRepository commentRepository, ReviewRepository reviewRepository) {
         this.songReviewRepository = songReviewRepository;
         this.songRepository = songRepository;
         this.userRepository = userRepository;
@@ -67,6 +68,7 @@ public class SongReviewService {
         this.reactionRepository = reactionRepository;
         this.reactionMapper = reactionMapper;
         this.commentRepository = commentRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     public Page<SongReviewResponse> findAll(Pageable pageable) {
@@ -93,6 +95,28 @@ public class SongReviewService {
 
         songReview.setActive(false);
         songReviewRepository.save(songReview);
+    }
+
+    @Transactional
+    public void hardDeleteById(Long id) {
+        // 1. Obtener la entidad y lanzar excepción si no existe
+        SongReviewEntity songReview = songReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Song review with ID: " + id + " not found."));
+
+        // 2. Validar que el usuario autenticado sea el dueño de la reseña
+        AuthService.validateRequestUserOwnership(songReview.getUser().getUserId());
+
+        // 3. Eliminar reacciones en comentarios de la reseña
+        reactionRepository.deleteReactionsOnReviewComments(id);
+
+        // 4. Eliminar reacciones directas a la reseña
+        reactionRepository.deleteByReviewId(id);
+
+        // 5. Borrado físico de los comentarios
+        commentRepository.deleteByReviewId(id);
+
+        // 6. Borrado físico de la reseña
+        songReviewRepository.delete(songReview);
     }
     @Transactional
     public SongReviewResponse reactivateById(Long id) {

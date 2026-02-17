@@ -234,8 +234,8 @@ public class AuthService {
     }
     @Transactional
     public void resendVerificationCode(String email) {
-        CredentialEntity credential = credentialsRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with this email."));
+        CredentialEntity credential = credentialsRepository.findByEmailOrUsername(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         UserEntity user = credential.getUser();
 

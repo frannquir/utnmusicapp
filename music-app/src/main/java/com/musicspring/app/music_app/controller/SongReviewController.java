@@ -363,7 +363,7 @@ public class SongReviewController {
     public ResponseEntity<Void> deleteSongReview(
             @Parameter(description = "Review ID", example = "10", required = true)
             @PathVariable Long reviewId) {
-        songReviewService.deleteById(reviewId);
+        songReviewService.hardDeleteById(reviewId);
         return ResponseEntity.noContent().build();
     }
 

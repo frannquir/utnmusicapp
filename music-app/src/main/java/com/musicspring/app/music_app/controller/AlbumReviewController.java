@@ -356,7 +356,7 @@ public class AlbumReviewController {
     public ResponseEntity<Void> deleteAlbumReview(
             @Parameter(description = "Review ID", example = "10", required = true)
             @PathVariable Long reviewId) {
-        albumReviewService.deleteById(reviewId);
+        albumReviewService.hardDeleteById(reviewId);
         return ResponseEntity.noContent().build();
     }
     @Operation(

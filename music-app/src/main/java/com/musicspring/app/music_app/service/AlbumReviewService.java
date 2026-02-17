@@ -93,6 +93,27 @@ public class AlbumReviewService {
         albumReviewRepository.save(albumReview);
     }
     @Transactional
+    public void hardDeleteById(Long id) {
+        // 1. Obtener la entidad y lanzar excepción si no existe
+        AlbumReviewEntity albumReview = albumReviewRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found."));
+
+        // 2. Validar que el usuario autenticado sea el dueño de la reseña
+        AuthService.validateRequestUserOwnership(albumReview.getUser().getUserId());
+
+        // 3. Eliminar reacciones en comentarios de la reseña
+        reactionRepository.deleteReactionsOnReviewComments(id);
+
+        // 4. Eliminar reacciones directas a la reseña
+        reactionRepository.deleteByReviewId(id);
+
+        // 5. Borrado físico de los comentarios
+        commentRepository.deleteByReviewId(id);
+
+        // 6. Borrado físico de la reseña
+        albumReviewRepository.delete(albumReview);
+    }
+    @Transactional
     public AlbumReviewResponse reactivateById(Long id) {
         AlbumReviewEntity albumReview = albumReviewRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Album review with ID: " + id + " not found."));

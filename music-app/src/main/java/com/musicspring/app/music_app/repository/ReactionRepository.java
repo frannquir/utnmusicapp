@@ -75,4 +75,9 @@ public interface ReactionRepository extends JpaRepository<ReactionEntity, Long> 
     Long countReactionsThisMonth(@Param("userId") Long userId, @Param("startOfMonth") LocalDateTime startOfMonth);
 
     Long countByReactionType(ReactionType reactionType);
+
+    @Modifying
+    @Query("DELETE FROM ReactionEntity r WHERE r.comment.commentId = :commentId")
+    void deleteByCommentId(@Param("commentId") Long commentId);
+
 }

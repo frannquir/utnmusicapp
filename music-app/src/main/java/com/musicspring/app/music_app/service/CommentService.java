@@ -75,6 +75,20 @@ public class CommentService {
         commentRepository.save(commentEntity);
     }
 
+    /// Used for own content deletion
+    @Transactional
+    public void hardDeleteById(Long id){
+        CommentEntity commentEntity = commentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Comment with ID:" + id + " not found."));
+
+        AuthService.validateRequestUserOwnership(commentEntity.getUser().getUserId());
+
+        // 1. Eliminar reacciones
+        reactionRepository.deleteByCommentId(id);
+        // 2. Borrado físico
+        commentRepository.delete(commentEntity);
+    }
+
     @Transactional
     public CommentResponse createSongReviewComment(CommentRequest commentRequest, Long reviewId) {
         AuthService.validateRequestUserOwnership(commentRequest.getUserId());

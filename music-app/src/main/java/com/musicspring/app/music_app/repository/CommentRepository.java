@@ -88,4 +88,8 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long>{
     Long countByReviewEntity_ReviewIdAndActiveTrue(@Param("reviewId") Long reviewId);
 
     Long countByActiveTrue();
+
+    @Modifying
+    @Query("DELETE FROM CommentEntity c WHERE c.reviewEntity.reviewId = :reviewId")
+    void deleteByReviewId(@Param("reviewId") Long reviewId);
 }

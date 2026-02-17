@@ -266,7 +266,7 @@ public class AlbumReviewCommentController {
             @Parameter(description = "ID of the comment", example = "1")
             @PathVariable Long commentId) {
 
-        commentService.deleteById(commentId);
+        commentService.hardDeleteById(commentId);
         return ResponseEntity.noContent().build();
     }
 
