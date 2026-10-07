@@ -1,0 +1,19 @@
+name: Supabase keep-alive
+
+# El plan gratuito de Supabase pausa el proyecto tras 7 dias sin actividad.
+# Este workflow llama cada 3 dias a un endpoint publico del backend que consulta
+# la base de datos, lo que tambien despierta el servicio de Render (plan free).
+on:
+  schedule:
+    - cron: "0 12 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend (touches the database)
+        run: |
+          curl -fsS --max-time 120 --retry 5 --retry-delay 30 --retry-all-errors \
+            "https://echoed-back.onrender.com/api/v1/stats/albums/mostReviewed" \
+            -o /dev/null -w "HTTP %{http_code}\n"
