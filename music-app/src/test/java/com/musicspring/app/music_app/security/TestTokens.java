@@ -8,7 +8,9 @@ import com.musicspring.app.music_app.security.enums.Role;
 import com.musicspring.app.music_app.security.service.JwtService;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,8 +25,10 @@ public final class TestTokens {
 
     public static JwtService jwtService() {
         JwtService jwtService = new JwtService();
-        // base64 of "test-secret-test-secret-test-secret"
-        ReflectionTestUtils.setField(jwtService, "jwtSecretKey", "dGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQ=");
+        // random key per run, nothing to leak
+        byte[] key = new byte[32];
+        new SecureRandom().nextBytes(key);
+        ReflectionTestUtils.setField(jwtService, "jwtSecretKey", Base64.getEncoder().encodeToString(key));
         ReflectionTestUtils.setField(jwtService, "jwtExpiration", ACCESS_EXPIRATION);
         ReflectionTestUtils.setField(jwtService, "refreshTokenExpiration", REFRESH_EXPIRATION);
         return jwtService;
