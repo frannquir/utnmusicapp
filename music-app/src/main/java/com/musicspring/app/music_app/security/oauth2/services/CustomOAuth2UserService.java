@@ -146,10 +146,8 @@ public class CustomOAuth2UserService extends OidcUserService {
                 credential.getUser().setActive(true);
             }
 
-            if (credential.getRefreshToken() == null) {
-                String refreshToken = jwtService.generateRefreshToken(credential);
-                credential.setRefreshToken(refreshToken);
-            }
+            // fresh refresh token on every sign-in, replaces the stored one
+            credential.setRefreshToken(jwtService.generateRefreshToken(credential));
 
             credential = credentialRepository.save(credential);
 
