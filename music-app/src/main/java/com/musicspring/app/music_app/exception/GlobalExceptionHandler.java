@@ -96,6 +96,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorDetails.from("Invalid credentials.", request.getDescription(false)));
     }
 
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorDetails> handleInvalidRefreshToken(InvalidRefreshTokenException ex, WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorDetails.from(ex.getMessage(), request.getDescription(false)));
+    }
+
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<ErrorDetails> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex, WebRequest request) {
         return ResponseEntity

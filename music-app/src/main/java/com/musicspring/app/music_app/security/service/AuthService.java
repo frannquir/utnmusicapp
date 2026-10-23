@@ -3,6 +3,7 @@ package com.musicspring.app.music_app.security.service;
 import com.musicspring.app.music_app.exception.AccountBannedException;
 import com.musicspring.app.music_app.exception.AccountDeactivatedException;
 import com.musicspring.app.music_app.exception.AccountNotVerifiedException; // <--- NUEVA EXCEPCIÓN
+import com.musicspring.app.music_app.exception.InvalidRefreshTokenException;
 import com.musicspring.app.music_app.model.dto.request.SignupRequest;
 import com.musicspring.app.music_app.model.entity.UserEntity;
 import com.musicspring.app.music_app.model.enums.DefaultAvatar;
@@ -19,6 +20,7 @@ import com.musicspring.app.music_app.security.mapper.AuthMapper;
 import com.musicspring.app.music_app.security.repository.CredentialRepository;
 import com.musicspring.app.music_app.security.repository.EmailVerificatorTokenRepository;
 import com.musicspring.app.music_app.security.repository.RoleRepository;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -84,6 +86,9 @@ public class AuthService {
 
         CredentialEntity user = authenticate(normalizedRequest);
         String token = jwtService.generateToken(user);
+        // fresh refresh token on every sign-in, replaces the stored one
+        user.setRefreshToken(jwtService.generateRefreshToken(user));
+        user = credentialsRepository.save(user);
 
         return authMapper.toAuthResponse(user, token);
     }
@@ -142,17 +147,20 @@ public class AuthService {
 
     @Transactional
     public AuthResponse refreshAccessToken(String refreshToken) {
-        String username = jwtService.extractUsername(refreshToken);
+        CredentialEntity credentialEntity;
+        try {
+            String username = jwtService.extractUsername(refreshToken);
+            credentialEntity = credentialsRepository.findByEmail(username)
+                    .orElseThrow(InvalidRefreshTokenException::new);
 
-        CredentialEntity credentialEntity = credentialsRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        if (!credentialEntity.getRefreshToken().equals(refreshToken)) {
-            throw new IllegalArgumentException("Refresh token does not match");
-        }
-
-        if (!jwtService.validateRefreshToken(refreshToken, credentialEntity)) {
-            throw new IllegalArgumentException("Invalid or expired refresh token");
+            // only the last issued token counts
+            if (!refreshToken.equals(credentialEntity.getRefreshToken())
+                    || !jwtService.validateRefreshToken(refreshToken, credentialEntity)) {
+                throw new InvalidRefreshTokenException();
+            }
+        } catch (JwtException | IllegalArgumentException e) {
+            // expired, malformed, bad signature, or empty
+            throw new InvalidRefreshTokenException();
         }
 
         String newAccessToken = jwtService.generateToken(credentialEntity);

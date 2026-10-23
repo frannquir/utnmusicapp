@@ -24,7 +24,7 @@ A comprehensive music social platform developed by UTN students. This applicatio
 ### ⚙️ Advanced Technical Features
 - **Hybrid Authentication**: Secure login via Google OAuth2 or traditional Email/Password.
 - **Stateless Security**: Full **JWT (JSON Web Token)** implementation for API protection.
-- **Fail-Safe Notificationsy**: Resilient email service architecture designed for cloud constraints.
+- **Fail-Safe Notifications**: Resilient email service architecture designed for cloud constraints.
 
 ## 🛠️ Tech Stack
 
@@ -63,8 +63,9 @@ Due to strict SMTP port restrictions (blocking ports 587/465) on free cloud infr
 
 The application uses a dual-token system for maximum security:
 
-- **Access Token**: Short-lived JWT for API access.
-- **Refresh Token**: Long-lived token to renew sessions without re-login.
+- **Access Token**: Short-lived JWT (30 min) for API access.
+- **Refresh Token**: Long-lived JWT (30 days). Every sign-in (password or Google) issues a new one, and every call to `POST /api/v1/auth/refresh` returns a new access token plus a new refresh token. Only the most recently issued refresh token is stored, so each account has one active refresh token and older ones stop working.
+- **Invalid Refresh Token**: If the refresh token is expired, malformed, wrongly signed, or no longer the stored one, `/auth/refresh` returns `401` with "Refresh token is invalid or expired. Please sign in again." The client should send the user back to sign-in.
 - **OAuth2 Flow**: The backend handles the code exchange with Google, preventing the exposure of CLIENT_SECRET to the frontend.
 
 ## 📁 Project Structure
